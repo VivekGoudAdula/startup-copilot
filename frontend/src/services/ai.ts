@@ -21,6 +21,7 @@ export interface ValidationResponse {
 }
 
 export interface RoadmapResponse {
+  strategic_summary?: string;
   week_1: {
     goals: string[];
     features: string[];
@@ -51,6 +52,23 @@ export interface CopyResponse {
 export type FocusType = 'web' | 'mobile' | 'saas';
 export type ToneType = 'professional' | 'bold' | 'playful';
 
+export interface SuggestRequest {
+  problem: string;
+  industry: string;
+  product_type: string;
+}
+
+export interface SuggestedIdea {
+  title: string;
+  description: string;
+  audience: string;
+  unique_value_proposition: string;
+}
+
+export interface SuggestResponse {
+  ideas: SuggestedIdea[];
+}
+
 async function post<T>(endpoint: string, body: object): Promise<T> {
   const res = await fetch(`${API_BASE}${endpoint}`, {
     method: 'POST',
@@ -63,6 +81,13 @@ async function post<T>(endpoint: string, body: object): Promise<T> {
   }
   return res.json() as Promise<T>;
 }
+
+export const suggestIdeas = (
+  problem: string,
+  industry: string,
+  product_type: string
+): Promise<SuggestResponse> =>
+  post<SuggestResponse>('/suggest-ideas', { problem, industry, product_type });
 
 export const validateIdea = (
   idea: string,

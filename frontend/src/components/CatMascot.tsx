@@ -16,11 +16,11 @@ export const CatMascot: React.FC<CatMascotProps> = ({ isGenerating, reaction, so
   const [loadingMsg, setLoadingMsg] = useState(0);
 
   const loadingMessages = [
-    "🐾 Sniffing the market...",
-    "📊 Crunching competitor data...",
-    "🧠 Consulting board of cats...",
-    "⚡ Generating insights...",
-    "🔍 Validating your vision...",
+    "🚀 Architecting your vision...",
+    "Defining strategic milestones...",
+    "🛡️ Identifying critical risks...",
+    "💻 Structuring optimized tech stack...",
+    "Your AI Co-Founder is finalizing your MVP roadmap...",
   ];
 
   useEffect(() => {
@@ -66,7 +66,7 @@ export const CatMascot: React.FC<CatMascotProps> = ({ isGenerating, reaction, so
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
             className="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none"
-            style={{ backdropFilter: 'blur(8px)', background: 'rgba(255,255,255,0.55)' }}
+            style={{ backdropFilter: 'blur(12px)', background: 'radial-gradient(circle at center, rgba(99,102,241,0.1) 0%, rgba(255,255,255,0.7) 100%)' }}
           >
             {/* Shimmering card overlay on the background */}
             <motion.div

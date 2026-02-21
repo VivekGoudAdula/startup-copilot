@@ -70,12 +70,63 @@ class CopyRequest(BaseModel):
     audience: str
     tone: str  # 'professional' | 'bold' | 'playful'
 
+class SuggestRequest(BaseModel):
+    problem: str
+    industry: str
+    product_type: str
+
 
 # ── Routes ───────────────────────────────────────────────────────────────────
 
 @app.get("/health")
 def health():
     return {"status": "ok", "service": "Startup Copilot API"}
+
+
+@app.post("/suggest-ideas")
+def suggest_ideas(body: SuggestRequest):
+    client = get_groq_client()
+
+    prompt = f"""Generate 3 unique, high-potential startup ideas based on:
+Problem: {body.problem}
+Industry: {body.industry}
+Product Type: {body.product_type}
+
+Return ONLY a valid JSON object with exactly this structure (no markdown, no explanation):
+{{
+  "ideas": [
+    {{
+      "title": "...",
+      "description": "...",
+      "audience": "...",
+      "unique_value_proposition": "..."
+    }},
+    ...
+  ]
+}}"""
+
+    completion = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "You are a visionary startup founder and incubator mentor. "
+                    "Generate creative, viable, and trend-aligned startup ideas. "
+                    "Always respond with valid JSON only."
+                )
+            },
+            {"role": "user", "content": prompt}
+        ],
+        temperature=0.8,
+        max_tokens=1024,
+    )
+
+    raw = completion.choices[0].message.content or "{}"
+    try:
+        return extract_json(raw)
+    except ValueError as e:
+        raise HTTPException(status_code=502, detail=str(e))
 
 
 @app.post("/validate")
@@ -133,6 +184,7 @@ def generate_roadmap(body: RoadmapRequest):
 
 Return ONLY a valid JSON object with exactly this structure (no markdown, no explanation):
 {{
+  "strategic_summary": "<3-sentence investor-grade strategic overview>",
   "week_1": {{
     "goals": ["...", "..."],
     "features": ["...", "..."],

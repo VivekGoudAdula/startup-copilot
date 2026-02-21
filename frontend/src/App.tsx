@@ -54,426 +54,215 @@ import { cn } from './lib/utils';
 
 type Tab = 'validate' | 'roadmap' | 'copy';
 
+import { OnboardingFlow } from './components/OnboardingFlow';
+import { ResultsView } from './components/ResultsView';
+
+import { doc, updateDoc, collection, addDoc, setDoc } from 'firebase/firestore';
+import { db } from './lib/firebase';
+import { WelcomeScreen } from './components/WelcomeScreen';
+import { ContinueDraftScreen } from './components/ContinueDraftScreen';
+import { ProjectData } from './context/AuthContext';
+
 function Dashboard() {
-  const { user } = useAuth();
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<Tab>('validate');
-  const [idea, setIdea] = useState('');
-  const [audience, setAudience] = useState('');
-  const [competitors, setCompetitors] = useState('');
-  const [focus, setFocus] = useState<FocusType>('saas');
-  const [tone, setTone] = useState<ToneType>('bold');
-
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [reaction, setReaction] = useState<'happy' | 'thinking' | 'surprised' | undefined>();
-  const [soundEnabled, setSoundEnabled] = useState(false);
-
-  const [validationResult, setValidationResult] = useState<ValidationResponse | null>(null);
-  const [roadmapResult, setRoadmapResult] = useState<RoadmapResponse | null>(null);
-  const [copyResult, setCopyResult] = useState<CopyResponse | null>(null);
-  const [apiError, setApiError] = useState<string | null>(null);
-
-  const [history, setHistory] = useState<{ id: string; idea: string; type: Tab; timestamp: number }[]>([]);
+  const { user, profile, projects, refreshProfile } = useAuth();
+  const [selectedProject, setSelectedProject] = useState<ProjectData | null>(null);
+  const [view, setView] = useState<'routing' | 'welcome' | 'continue_draft' | 'onboarding' | 'results' | 'history'>('routing');
+  const [onboardingFocus, setOnboardingFocus] = useState<{ step?: any; flow?: any }>({});
 
   useEffect(() => {
-    const saved = localStorage.getItem('startup_copilot_history');
-    if (saved) setHistory(JSON.parse(saved));
-  }, []);
+    if (!profile) return;
 
-  const saveToHistory = (type: Tab) => {
-    const newItem = {
-      id: Math.random().toString(36).substr(2, 9),
-      idea,
-      type,
-      timestamp: Date.now()
-    };
-    const updated = [newItem, ...history].slice(0, 10);
-    setHistory(updated);
-    localStorage.setItem('startup_copilot_history', JSON.stringify(updated));
-  };
-
-  const handleGenerate = async () => {
-    if (!idea) return;
-
-    setIsGenerating(true);
-    setReaction('thinking');
-    setApiError(null);
-
-    try {
-      if (activeTab === 'validate') {
-        const result = await validateIdea(idea, audience, competitors);
-        setValidationResult(result);
-        if (result.investability_score > 85) {
-          setReaction('happy');
-          confetti({
-            particleCount: 150,
-            spread: 70,
-            origin: { y: 0.6 },
-            colors: ['#6366f1', '#10b981', '#f59e0b']
-          });
-        } else {
-          setReaction('happy');
-        }
-      } else if (activeTab === 'roadmap') {
-        const result = await generateRoadmap(idea, focus);
-        setRoadmapResult(result);
-        setReaction('happy');
-      } else if (activeTab === 'copy') {
-        const result = await generateCopy(idea, audience, tone);
-        setCopyResult(result);
-        setReaction('happy');
-      }
-      saveToHistory(activeTab);
-    } catch (error: any) {
-      console.error(error);
-      setReaction('surprised');
-      const msg = error?.message || 'Unknown error';
-      if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('CORS')) {
-        setApiError('Cannot reach the backend. Make sure the Python server is running on port 8000: python -m uvicorn main:app --reload --port 8000');
+    if (projects.length > 0) {
+      setView('welcome');
+    } else if (profile.onboardingComplete) {
+      setView('welcome');
+    } else {
+      const hasStarted = localStorage.getItem(`onboarding_draft_status`);
+      if (hasStarted) {
+        setView('continue_draft');
       } else {
-        setApiError(msg);
+        setView('onboarding');
       }
-    } finally {
-      setIsGenerating(false);
-      setTimeout(() => setReaction(undefined), 3000);
     }
+  }, [profile, projects.length, user?.uid]);
+
+  const handleOnboardingComplete = async (data: any) => {
+    if (!user || !db) return;
+
+    // Save to Firestore
+    const projectRef = await addDoc(collection(db, 'users', user.uid, 'projects'), {
+      name: data.idea.split(':')[0] || 'My Stealth Startup',
+      idea: data.idea,
+      audience: data.audience,
+      competitors: data.competitors || '',
+      validationScore: Math.floor(Math.random() * 20) + 70,
+      executionConfidence: Math.floor(Math.random() * 15) + 75,
+      lastUpdated: Date.now()
+    });
+
+    // Update profile
+    await updateDoc(doc(db, 'users', user.uid), {
+      onboardingComplete: true,
+      lastActiveProjectId: projectRef.id
+    });
+
+    localStorage.removeItem(`onboarding_draft_status`);
+    await refreshProfile();
+
+    setSelectedProject({
+      id: projectRef.id,
+      name: data.idea.split(':')[0] || 'My Stealth Startup',
+      idea: data.idea,
+      audience: data.audience,
+      competitors: data.competitors || '',
+      validationScore: 80,
+      executionConfidence: 82,
+      lastUpdated: Date.now()
+    });
+    setView('results');
   };
 
-  const loadDemo = () => {
-    setIdea("AI-powered student study planner that optimizes focus blocks");
-    setAudience("College students struggling with procrastination");
-    setTone("bold");
-    setFocus("mobile");
+  const handleStartNew = () => {
+    setOnboardingFocus({ step: 'welcome', flow: null });
+    setView('onboarding');
   };
 
-  const handleLogout = async () => {
-    if (auth) {
-      await signOut(auth);
-    }
-    navigate('/');
+  const handleContinueDashboard = (project: ProjectData) => {
+    setSelectedProject(project);
+    setView('results');
   };
+
+  const handleViewAll = () => setView('history');
+
+  if (view === 'routing') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#FDFDFF]">
+        <CatMascot isGenerating={true} soundEnabled={true} />
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-[#FDFDFF] font-sans text-slate-900 selection:bg-indigo-100 selection:text-indigo-900" style={{ background: 'radial-gradient(ellipse at 20% 0%, rgba(99,102,241,0.06) 0%, transparent 50%), radial-gradient(ellipse at 80% 100%, rgba(139,92,246,0.05) 0%, transparent 50%), #FDFDFF' }}>
-      {/* Background Gradients */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="absolute top-0 left-1/4 w-[50%] h-[50%] bg-indigo-100/30 blur-[120px] rounded-full animate-pulse" />
-        <div className="absolute bottom-0 right-1/4 w-[40%] h-[40%] bg-purple-100/30 blur-[100px] rounded-full animate-pulse" style={{ animationDelay: '2s' }} />
-      </div>
-
-      <header className="relative z-10 border-b border-slate-100 bg-white/70 backdrop-blur-2xl sticky top-0">
-        <div className="max-w-7xl mx-auto px-8 h-24 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-indigo-200 group cursor-pointer" onClick={() => navigate('/')}>
-              <Sparkles className="text-white group-hover:rotate-12 transition-transform" size={24} />
-            </div>
-            <div>
-              <h1 className="font-black text-2xl tracking-tight text-slate-900">Startup Copilot</h1>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em]">AI Co-Founder</span>
-                <div className="w-1 h-1 rounded-full bg-slate-200" />
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">v1.0</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-6">
-            {/* AI Status */}
-            <motion.div
-              animate={{ opacity: [0.7, 1, 0.7] }}
-              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-              className="hidden lg:flex items-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-100 rounded-2xl"
-            >
-              <motion.div
-                className="w-2 h-2 rounded-full bg-emerald-500"
-                animate={{ scale: [1, 1.35, 1] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              />
-              <span className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">
-                {isGenerating ? '🐾 Reviewing market...' : 'AI Co-Founder Online'}
-              </span>
-            </motion.div>
-            <div className="hidden lg:flex items-center gap-4 px-5 py-2.5 bg-slate-50 rounded-2xl border border-slate-100 shadow-sm">
-              <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center shadow-sm border border-slate-100">
-                <UserIcon size={16} className="text-indigo-600" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-xs font-black text-slate-900 truncate max-w-[150px]">{user?.email?.split('@')[0]}</span>
-                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Pro Founder</span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setSoundEnabled(!soundEnabled)}
-                className={cn(
-                  "p-3 rounded-2xl transition-all shadow-sm border",
-                  soundEnabled ? "bg-indigo-50 border-indigo-100 text-indigo-600" : "bg-white border-slate-100 text-slate-400 hover:text-slate-600"
-                )}
-                aria-label="Toggle sound"
-              >
-                {soundEnabled ? <Volume2 size={20} /> : <VolumeX size={20} />}
-              </button>
-              <button
-                onClick={handleLogout}
-                className="p-3 bg-white border border-slate-100 rounded-2xl transition-all shadow-sm text-slate-400 hover:text-rose-500 hover:border-rose-100 hover:bg-rose-50"
-                title="Logout"
-              >
-                <LogOut size={20} />
-              </button>
-            </div>
-          </div>
+    <div className="min-h-screen bg-[#FDFDFF] overflow-x-hidden relative">
+      {/* Persistent Logout Button for Full-Screen Cards */}
+      {(view === 'welcome' || view === 'continue_draft') && (
+        <div className="fixed top-8 right-8 z-[100]">
+          <button
+            onClick={() => signOut(auth)}
+            className="group flex items-center gap-3 px-6 py-3 bg-white/80 backdrop-blur-xl border border-slate-100 hover:border-rose-100 hover:bg-rose-50/30 text-slate-400 hover:text-rose-500 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-slate-100"
+          >
+            <LogOut size={16} className="group-hover:-translate-x-1 transition-transform" /> Sign Out
+          </button>
         </div>
-      </header>
+      )}
 
-      <main className="relative z-10 max-w-7xl mx-auto px-8 py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
-          {/* Sidebar Controls */}
-          <aside className="lg:col-span-4 space-y-10">
-            <div className="bg-white p-10 rounded-[3.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.04)] border border-slate-100 space-y-10 relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500" />
+      <AnimatePresence mode="wait">
+        {view === 'welcome' && projects.length > 0 && (() => {
+          const bestProject = [...projects].sort((a, b) => (b.validationScore + b.executionConfidence) - (a.validationScore + a.executionConfidence))[0];
+          return (
+            <motion.div key="welcome" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <WelcomeScreen
+                userName={user?.displayName || user?.email?.split('@')[0] || 'Founder'}
+                project={bestProject}
+                onContinue={handleContinueDashboard}
+                onNewIdea={handleStartNew}
+                onViewAll={handleViewAll}
+                isBestProject={projects.length > 1}
+              />
+            </motion.div>
+          );
+        })()}
 
-              <div className="space-y-8">
-                <div className="space-y-3">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2 ml-1">
-                    <Lightbulb size={12} className="text-indigo-500" />
-                    The Vision
-                  </label>
-                  <textarea
-                    value={idea}
-                    onChange={(e) => setIdea(e.target.value)}
-                    placeholder="What are we building today?"
-                    className="w-full h-40 p-6 rounded-[2rem] bg-slate-50 border-2 border-transparent focus:border-indigo-100 focus:bg-white focus:ring-0 transition-all resize-none text-sm font-medium leading-relaxed"
-                  />
-                </div>
+        {view === 'welcome' && projects.length === 0 && (
+          <motion.div key="no-projects" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <ContinueDraftScreen
+              onContinue={() => setView('onboarding')}
+              onNewIdea={handleStartNew}
+              onExplore={() => {
+                setOnboardingFocus({ step: 'create_step1', flow: 'help_create' });
+                setView('onboarding');
+              }}
+            />
+          </motion.div>
+        )}
 
-                <div className="space-y-3">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Target Audience</label>
-                  <input
-                    type="text"
-                    value={audience}
-                    onChange={(e) => setAudience(e.target.value)}
-                    placeholder="Who is this for?"
-                    className="w-full p-5 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-indigo-100 focus:bg-white focus:ring-0 transition-all text-sm font-medium"
-                  />
-                </div>
+        {view === 'continue_draft' && (
+          <motion.div key="draft" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <ContinueDraftScreen
+              onContinue={() => setView('onboarding')}
+              onNewIdea={handleStartNew}
+              onExplore={() => {
+                setOnboardingFocus({ step: 'create_step1', flow: 'help_create' });
+                setView('onboarding');
+              }}
+            />
+          </motion.div>
+        )}
 
-                {activeTab === 'validate' && (
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Competitors</label>
-                    <input
-                      type="text"
-                      value={competitors}
-                      onChange={(e) => setCompetitors(e.target.value)}
-                      placeholder="e.g. Uber, Airbnb"
-                      className="w-full p-5 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-indigo-100 focus:bg-white focus:ring-0 transition-all text-sm font-medium"
-                    />
-                  </div>
-                )}
+        {view === 'onboarding' && (
+          <motion.div key="onboarding" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="w-full">
+            <OnboardingFlow
+              onComplete={handleOnboardingComplete}
+              onBackToDashboard={() => setView(projects.length > 0 ? 'welcome' : 'routing')}
+              initialStep={onboardingFocus.step}
+              initialFlow={onboardingFocus.flow}
+            />
+          </motion.div>
+        )}
 
-                {activeTab === 'roadmap' && (
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Focus Type</label>
-                    <div className="grid grid-cols-3 gap-3">
-                      {(['web', 'mobile', 'saas'] as FocusType[]).map((t) => (
-                        <button
-                          key={t}
-                          onClick={() => setFocus(t)}
-                          className={cn(
-                            "py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest border-2 transition-all",
-                            focus === t ? "bg-indigo-600 border-indigo-600 text-white shadow-xl shadow-indigo-200" : "bg-white border-slate-100 text-slate-400 hover:border-indigo-100"
-                          )}
-                        >
-                          {t}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
+        {view === 'results' && selectedProject && (
+          <motion.div key="results" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <ResultsView
+              idea={selectedProject.idea}
+              audience={selectedProject.audience}
+              competitors={selectedProject.competitors}
+              onReset={() => setView('welcome')}
+            />
+          </motion.div>
+        )}
 
-                {activeTab === 'copy' && (
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Tone of Voice</label>
-                    <div className="grid grid-cols-3 gap-3">
-                      {(['professional', 'bold', 'playful'] as ToneType[]).map((t) => (
-                        <button
-                          key={t}
-                          onClick={() => setTone(t)}
-                          className={cn(
-                            "py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest border-2 transition-all",
-                            tone === t ? "bg-indigo-600 border-indigo-600 text-white shadow-xl shadow-indigo-200" : "bg-white border-slate-100 text-slate-400 hover:border-indigo-100"
-                          )}
-                        >
-                          {t}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
+        {view === 'history' && (
+          <motion.div key="history" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="max-w-6xl mx-auto px-6 py-20 space-y-20">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <button onClick={() => setView('welcome')} className="p-4 hover:bg-slate-50 rounded-2xl transition-all">
+                  <History size={24} className="rotate-180" />
+                </button>
+                <h1 className="text-4xl font-black text-slate-900 tracking-tight italic uppercase leading-none">Journal</h1>
               </div>
-
-              <motion.button
-                onClick={handleGenerate}
-                disabled={isGenerating || !idea}
-                whileHover={{ scale: idea ? 1.02 : 1 }}
-                whileTap={{ scale: 0.97 }}
-                className="w-full py-5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-[2rem] font-black text-lg flex items-center justify-center gap-3 shadow-2xl shadow-indigo-200/60 hover:shadow-indigo-300/60 disabled:opacity-50 disabled:cursor-not-allowed transition-all group relative overflow-hidden"
-              >
-                <span className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out pointer-events-none rounded-[2rem]" />
-                {isGenerating ? (
-                  <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" />
-                ) : (
-                  <>
-                    <span className="relative z-10">Generate Insights</span>
-                    <ArrowRight size={20} className="relative z-10 group-hover:translate-x-1 transition-transform" />
-                  </>
-                )}
-              </motion.button>
-            </div>
-
-            {/* History Card */}
-            <div className="bg-white p-10 rounded-[3.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.04)] border border-slate-100">
-              <div className="flex items-center justify-between mb-8">
-                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
-                  <History size={14} className="text-indigo-500" />
-                  Recent Ideas
-                </h3>
+              <div className="flex items-center gap-4">
+                <button onClick={() => setView('welcome')} className="text-xs font-black uppercase text-indigo-600 tracking-widest bg-slate-50 px-6 py-3 rounded-xl hover:bg-slate-100 transition-all">Back to Launchpad</button>
                 <button
-                  onClick={() => { setHistory([]); localStorage.removeItem('startup_copilot_history'); }}
-                  className="p-2 hover:bg-rose-50 rounded-xl transition-colors text-slate-300 hover:text-rose-500"
+                  onClick={() => signOut(auth)}
+                  className="px-6 py-3 bg-white border border-slate-100 hover:border-rose-100 hover:bg-rose-50/30 text-slate-400 hover:text-rose-500 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm"
                 >
-                  <Trash2 size={14} />
+                  Sign Out
                 </button>
               </div>
-              <div className="space-y-4">
-                {history.length === 0 ? (
-                  <div className="text-center py-8">
-                    <p className="text-xs text-slate-400 font-bold italic">No history yet...</p>
-                  </div>
-                ) : (
-                  history.map((item) => (
-                    <button
-                      key={item.id}
-                      onClick={() => { setIdea(item.idea); setActiveTab(item.type); }}
-                      className="w-full text-left p-5 rounded-[1.5rem] bg-slate-50/50 border border-transparent hover:border-indigo-100 hover:bg-white transition-all group"
-                    >
-                      <p className="text-xs font-black text-slate-700 line-clamp-1 group-hover:text-indigo-600 transition-colors">{item.idea}</p>
-                      <div className="flex items-center gap-2 mt-2">
-                        <span className="text-[9px] font-black text-indigo-500 uppercase tracking-widest">{item.type}</span>
-                        <div className="w-1 h-1 rounded-full bg-slate-200" />
-                        <span className="text-[9px] font-bold text-slate-400">{new Date(item.timestamp).toLocaleDateString()}</span>
-                      </div>
-                    </button>
-                  ))
-                )}
-              </div>
             </div>
-          </aside>
 
-          {/* Content Area */}
-          <div className="lg:col-span-8 space-y-12">
-            {/* Tabs */}
-            <nav className="flex p-2 bg-white rounded-[2rem] shadow-xl shadow-indigo-500/8 border border-slate-100 w-fit relative">
-              <TabButton active={activeTab === 'validate'} onClick={() => setActiveTab('validate')} icon={<Lightbulb size={18} />} label="Validation" />
-              <TabButton active={activeTab === 'roadmap'} onClick={() => setActiveTab('roadmap')} icon={<Rocket size={18} />} label="Roadmap" />
-              <TabButton active={activeTab === 'copy'} onClick={() => setActiveTab('copy')} icon={<Layout size={18} />} label="Copywriting" />
-            </nav>
-
-            {/* API Error Banner */}
-            {apiError && (
-              <div className="flex items-start gap-3 p-5 bg-rose-50 border border-rose-200 rounded-3xl text-rose-700">
-                <div className="mt-0.5 shrink-0 w-5 h-5 rounded-full bg-rose-500 flex items-center justify-center">
-                  <span className="text-white text-[10px] font-black">!</span>
-                </div>
-                <div>
-                  <p className="text-sm font-bold">Error</p>
-                  <p className="text-xs mt-0.5 font-medium opacity-80">{apiError}</p>
-                </div>
-              </div>
-            )}
-
-            {/* Results Display */}
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeTab + (isGenerating ? '-loading' : '-ready')}
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.98 }}
-                transition={{ duration: 0.4, ease: "circOut" }}
-                className="min-h-[600px]"
-              >
-                {!isGenerating && activeTab === 'validate' && validationResult && <IdeaValidation data={validationResult} />}
-                {!isGenerating && activeTab === 'roadmap' && roadmapResult && <RoadmapGenerator data={roadmapResult} />}
-                {!isGenerating && activeTab === 'copy' && copyResult && <CopyGenerator data={copyResult} />}
-
-                {!isGenerating && !validationResult && !roadmapResult && !copyResult && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.97 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="h-[600px] flex flex-col items-center justify-center text-center space-y-10 bg-gradient-to-br from-white/60 to-indigo-50/40 rounded-[4rem] border-2 border-dashed border-indigo-100/60 backdrop-blur-sm"
-                  >
-                    <div className="relative">
-                      <motion.div
-                        animate={{
-                          y: [0, -18, 0],
-                          rotate: [0, 3, -3, 0],
-                        }}
-                        transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-                        className="w-36 h-36 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-[2.5rem] flex items-center justify-center shadow-2xl shadow-indigo-200/60"
-                      >
-                        <Sparkles className="text-indigo-600" size={60} />
-                      </motion.div>
-                      {/* Orbiting dot */}
-                      <motion.div
-                        className="absolute top-2 right-2 w-4 h-4 bg-indigo-500 rounded-full shadow-lg"
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
-                        style={{ transformOrigin: '-20px 60px' }}
-                      />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {projects.map(p => (
+                <button key={p.id} onClick={() => handleContinueDashboard(p)} className="group p-10 bg-white border border-slate-100 hover:border-indigo-600 rounded-[3rem] text-left space-y-4 transition-all hover:shadow-2xl">
+                  <h3 className="text-xl font-black italic uppercase group-hover:text-indigo-600 transition-colors">{p.name}</h3>
+                  <p className="text-slate-500 text-sm line-clamp-2 normal-case leading-relaxed">{p.idea}</p>
+                  <div className="flex items-center gap-4 pt-6 mt-4 border-t border-slate-50">
+                    <div className="flex flex-col">
+                      <span className="text-[8px] font-black text-slate-300 uppercase tracking-[0.2em]">Score</span>
+                      <span className="text-xs font-black text-indigo-600">{p.validationScore}</span>
                     </div>
-                    <div className="max-w-md px-8 space-y-4">
-                      <h3 className="text-4xl font-black text-slate-900 tracking-tight">Ready to build? 🚀</h3>
-                      <p className="text-slate-500 text-base font-medium leading-relaxed">
-                        Enter your startup idea on the left and let your AI Co-Founder help you navigate the journey from zero to one.
-                      </p>
-                      <button
-                        onClick={loadDemo}
-                        className="text-xs font-black text-indigo-500 uppercase tracking-widest hover:text-indigo-700 transition-colors bg-indigo-50 hover:bg-indigo-100 px-5 py-2.5 rounded-2xl"
-                      >
-                        ✨ Try a Demo Idea
-                      </button>
-                    </div>
-                  </motion.div>
-                )}
-
-                {isGenerating && (
-                  <div className="h-[600px] flex flex-col items-center justify-center text-center space-y-6">
-                    <div className="space-y-3">
-                      <h3 className="text-3xl font-black text-slate-900 tracking-tight">Consulting the Board...</h3>
-                      <p className="text-slate-500 text-base font-medium">Our AI Co-Founder is crunching market data.</p>
-                    </div>
-                    {/* Shimmer skeleton cards */}
-                    <div className="w-full max-w-lg space-y-3 mt-4">
-                      {[100, 75, 85, 60].map((w, i) => (
-                        <motion.div
-                          key={i}
-                          className="h-12 rounded-2xl"
-                          style={{ width: `${w}%`, background: 'linear-gradient(90deg, #e0e7ff 25%, #c7d2fe 50%, #e0e7ff 75%)', backgroundSize: '200% 100%' }}
-                          animate={{ backgroundPosition: ['200% 0', '-200% 0'] }}
-                          transition={{ duration: 1.5, repeat: Infinity, ease: 'linear', delay: i * 0.15 }}
-                        />
-                      ))}
+                    <div className="h-8 w-px bg-slate-50" />
+                    <div className="flex flex-col">
+                      <span className="text-[8px] font-black text-slate-300 uppercase tracking-[0.2em]">Confidence</span>
+                      <span className="text-xs font-black text-emerald-500">{p.executionConfidence}%</span>
                     </div>
                   </div>
-                )}
-              </motion.div>
-            </AnimatePresence>
-
-          </div>
-        </div>
-      </main>
-
-      <CatMascot isGenerating={isGenerating} reaction={reaction} soundEnabled={soundEnabled} />
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -518,7 +307,11 @@ export default function App() {
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuth();
-  if (loading) return null;
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center bg-[#FDFDFF]">
+      <div className="w-12 h-12 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin" />
+    </div>
+  );
   if (!user) return <Navigate to="/login" />;
   return <>{children}</>;
 };
