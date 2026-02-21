@@ -1,5 +1,9 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import Lottie from 'lottie-react';
+import catAnimation from '../public/animations/Catloader.json';
+import meowSound from '../public/sounds/meow.mp3';
+import { cn } from '../lib/utils';
 
 interface CatMascotProps {
   isGenerating: boolean;
@@ -9,122 +13,138 @@ interface CatMascotProps {
 
 export const CatMascot: React.FC<CatMascotProps> = ({ isGenerating, reaction, soundEnabled }) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [loadingMsg, setLoadingMsg] = useState(0);
+
+  const loadingMessages = [
+    "🐾 Sniffing the market...",
+    "📊 Crunching competitor data...",
+    "🧠 Consulting board of cats...",
+    "⚡ Generating insights...",
+    "🔍 Validating your vision...",
+  ];
 
   useEffect(() => {
-    if (soundEnabled && !audioRef.current) {
-      audioRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3'); // Short cute meow
+    if (!isGenerating) return;
+
+    // Play meow sound when loading starts
+    playMeow();
+
+    setLoadingMsg(0);
+    const interval = setInterval(() => {
+      setLoadingMsg(prev => (prev + 1) % loadingMessages.length);
+    }, 1800);
+    return () => clearInterval(interval);
+  }, [isGenerating]);
+
+  useEffect(() => {
+    if (soundEnabled) {
+      console.log('Initializing meow sound from:', meowSound);
+      // Add a cache breaker to ensure we get the latest file
+      const url = `${meowSound}${meowSound.includes('?') ? '&' : '?'}v=${Date.now()}`;
+      audioRef.current = new Audio(url);
+      audioRef.current.load();
+    } else {
+      audioRef.current = null;
     }
-  }, [soundEnabled]);
+  }, [soundEnabled, meowSound]);
 
   const playMeow = () => {
     if (soundEnabled && audioRef.current) {
       audioRef.current.currentTime = 0;
-      audioRef.current.play().catch(() => {});
+      audioRef.current.play().catch(() => { });
     }
   };
 
   return (
     <>
+      {/* ══ Loading Overlay ══ */}
       <AnimatePresence>
         {isGenerating && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-white/40 backdrop-blur-sm flex items-center justify-center pointer-events-none"
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none"
+            style={{ backdropFilter: 'blur(8px)', background: 'rgba(255,255,255,0.55)' }}
           >
+            {/* Shimmering card overlay on the background */}
             <motion.div
-              animate={{
-                y: [0, -40, 0],
-                rotate: [0, 10, -10, 0],
-                scale: [1, 1.2, 1],
-              }}
-              transition={{
-                duration: 0.6,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-              className="flex flex-col items-center gap-6"
+              initial={{ scale: 0.85, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.85, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+              className="flex flex-col items-center gap-8"
             >
-              <CatSVG className="w-48 h-48 text-indigo-600 drop-shadow-2xl" />
-              <motion.div
-                animate={{ opacity: [0.4, 1, 0.4] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-                className="bg-indigo-600 text-white px-8 py-3 rounded-full font-black text-xl shadow-xl"
-              >
-                MEOW-LATING... 🐾
-              </motion.div>
+              {/* Cat typing animation */}
+              <div className="relative">
+                {/* Glow ring */}
+                <motion.div
+                  className="absolute inset-0 rounded-full"
+                  style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.3) 0%, transparent 65%)' }}
+                  animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0.9, 0.5] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                />
+
+                {/* Lottie Cat Animation - No Box Outline */}
+                <motion.div
+                  className="relative w-64 h-64 flex items-center justify-center overflow-hidden"
+                >
+                  <Lottie
+                    animationData={catAnimation}
+                    loop={true}
+                    className="w-full h-full scale-110"
+                  />
+                </motion.div>
+
+                {/* Typing dots */}
+                <motion.div
+                  className="absolute bottom-4 right-4 flex gap-1 bg-indigo-600 rounded-full px-3 py-1.5 shadow-lg"
+                >
+                  {[0, 1, 2].map(i => (
+                    <motion.div
+                      key={i}
+                      className="w-1.5 h-1.5 bg-white rounded-full"
+                      animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
+                      transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.2 }}
+                    />
+                  ))}
+                </motion.div>
+              </div>
+
+              {/* Loading message with animated transition */}
+              <div className="text-center space-y-2">
+                <AnimatePresence mode="wait">
+                  <motion.p
+                    key={loadingMsg}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.35 }}
+                    className="text-xl font-black text-slate-900 tracking-tight"
+                  >
+                    {loadingMessages[loadingMsg]}
+                  </motion.p>
+                </AnimatePresence>
+                <p className="text-sm text-slate-500 font-medium">Your AI Co-Founder is on it.</p>
+              </div>
+
+              {/* Shimmer bars (skeleton-like) */}
+              <div className="w-72 space-y-2.5">
+                {[100, 80, 65].map((w, i) => (
+                  <motion.div
+                    key={i}
+                    className="h-3 rounded-full bg-gradient-to-r from-indigo-100 via-indigo-200 to-indigo-100"
+                    style={{ width: `${w}%` }}
+                    animate={{ backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] }}
+                    transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.2 }}
+                  />
+                ))}
+              </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-
-      <div className="fixed bottom-8 right-8 z-[110]">
-        <motion.div
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          onClick={playMeow}
-          className="relative cursor-pointer group pointer-events-auto"
-        >
-          <motion.div
-            animate={!isGenerating ? {
-              y: [0, -10, 0],
-            } : {}}
-            transition={{
-              duration: 3,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-            className="bg-white p-5 rounded-[2rem] shadow-2xl border-4 border-indigo-50 flex items-center justify-center relative overflow-hidden"
-          >
-            <CatSVG className={isGenerating ? "text-slate-200" : "text-indigo-600 group-hover:rotate-12 transition-transform duration-300"} size={60} />
-            
-            {/* Reaction Bubbles */}
-            <AnimatePresence>
-              {reaction === 'happy' && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0, y: 0 }}
-                  animate={{ opacity: 1, scale: 1, y: -80 }}
-                  exit={{ opacity: 0, scale: 0 }}
-                  className="absolute bg-emerald-500 text-white px-4 py-2 rounded-2xl text-sm font-black shadow-xl whitespace-nowrap"
-                >
-                  PURR-FECT! ✨
-                </motion.div>
-              )}
-              {reaction === 'surprised' && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0, y: 0 }}
-                  animate={{ opacity: 1, scale: 1, y: -80 }}
-                  exit={{ opacity: 0, scale: 0 }}
-                  className="absolute bg-rose-500 text-white px-4 py-2 rounded-2xl text-sm font-black shadow-xl whitespace-nowrap"
-                >
-                  HISS! ERROR 🙀
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
-        </motion.div>
-      </div>
     </>
   );
 };
-
-const CatSVG = ({ className, size = 48 }: { className?: string; size?: number }) => (
-  <svg 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="2" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
-    className={className}
-  >
-    <path d="M12 5c.67 0 1.35.09 2 .26 1.78-2 5.03-2.84 6.42-2.45.44.12.58.58.44 1.02-.23.78-.64 1.58-1.13 2.35C21.25 7.67 22 9.75 22 12c0 5.52-4.48 10-10 10S2 17.52 2 12c0-2.25.75-4.33 2.27-5.82-.49-.77-.9-1.57-1.13-2.35-.14-.44 0-.9.44-1.02 1.39-.39 4.64.45 6.42 2.45.65-.17 1.33-.26 2-.26z" />
-    <circle cx="9" cy="12" r="1" fill="currentColor" />
-    <circle cx="15" cy="12" r="1" fill="currentColor" />
-    <path d="M12 16c-1 0-2-.5-2-1.5" />
-    <path d="M12 16c1 0 2-.5 2-1.5" />
-  </svg>
-);
