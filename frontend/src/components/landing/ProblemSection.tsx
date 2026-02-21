@@ -1,7 +1,7 @@
 ﻿import React from 'react';
 import { motion } from 'motion/react';
 import Lottie from 'lottie-react';
-import catAnimation from '../../public/animations/Cat Animation.json';
+import chatbotAnimation from '../../public/animations/Live chatbot.json';
 
 const painPoints = [
   { text: 'No idea if market exists', delay: 0.3 },
@@ -12,7 +12,7 @@ const painPoints = [
 
 export const ProblemSection: React.FC = () => {
   return (
-    <section id="features" className="py-24 relative overflow-hidden">
+    <section id="features" className="pt-24 pb-12 relative overflow-hidden">
       {/* Background glows */}
       <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[500px] h-[500px] bg-red-600/8 blur-[160px] rounded-full pointer-events-none" />
       <div className="absolute top-0 right-1/4 w-72 h-72 bg-accent/8 blur-[120px] rounded-full pointer-events-none" />
@@ -30,7 +30,7 @@ export const ProblemSection: React.FC = () => {
           >
             <div className="flex items-center justify-center overflow-hidden" style={{ height: '100%', maxHeight: '650px' }}>
               <Lottie
-                animationData={catAnimation}
+                animationData={chatbotAnimation}
                 loop={true}
                 autoplay={true}
                 style={{ width: '100%', maxWidth: '750px', height: '650px', objectFit: 'contain' }}

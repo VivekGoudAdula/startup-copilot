@@ -1,9 +1,11 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { MousePointer2, Play } from 'lucide-react';
+import { MousePointer2, Play, Sparkles } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { HeroRobotScene } from './HeroRobotScene';
 
 export const HeroSection: React.FC = () => {
+    const navigate = useNavigate();
     return (
         <section className="relative min-h-[90vh] flex items-center pt-32 pb-20 overflow-hidden premium-gradient">
             {/* Background Particles/Glows */}
@@ -58,14 +60,9 @@ export const HeroSection: React.FC = () => {
                     transition={{ duration: 0.8, ease: "easeOut" }}
                     className="space-y-8"
                 >
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-accent text-sm font-medium backdrop-blur-sm">
-                        <span className="flex h-2 w-2 rounded-full bg-accent animate-pulse" />
-                        Leading the Idea Revolution
-                    </div>
 
-                    <h1 className="text-6xl md:text-8xl font-display font-black leading-[0.95] tracking-tight text-white italic">
-                        Meet Your <br />
-                        <span className="text-glow text-accent">AI Co-Founder.</span>
+                    <h1 className="text-6xl md:text-8xl font-display font-black leading-[1.1] tracking-tight text-white italic">
+                        Meet Your <span className="text-glow text-accent whitespace-nowrap">AI Co-Founder.</span>
                     </h1>
 
                     <p className="text-xl text-slate-400 max-w-lg leading-relaxed">
@@ -73,23 +70,28 @@ export const HeroSection: React.FC = () => {
                         <span className="text-white/60">Crafted for builders who move at lightspeed.</span>
                     </p>
 
-                    <div className="flex flex-col sm:flex-row gap-5">
+                    <div className="flex justify-center lg:justify-start">
                         <motion.button
-                            whileHover={{ scale: 1.05, boxShadow: "0 0 30px rgba(79, 156, 249, 0.4)" }}
-                            whileTap={{ scale: 0.95 }}
-                            className="px-8 py-4 bg-accent text-white rounded-2xl font-black text-lg flex items-center justify-center gap-3 transition-all"
+                            onClick={() => navigate('/login')}
+                            whileHover={{
+                                scale: 1.05,
+                                boxShadow: "0 0 40px rgba(79, 156, 249, 0.6)",
+                                background: "linear-gradient(135deg, #4f9cf9 0%, #6366f1 100%)"
+                            }}
+                            whileTap={{ scale: 0.98 }}
+                            className="group relative px-10 py-5 bg-accent text-white rounded-2xl font-black text-xl flex items-center justify-center gap-3 transition-all overflow-hidden shadow-2xl shadow-accent/20"
                         >
-                            <MousePointer2 size={20} />
-                            🐾 Get Started
-                        </motion.button>
+                            {/* Animated Shine Effect */}
+                            <motion.div
+                                initial={{ x: "-100%" }}
+                                whileHover={{ x: "100%" }}
+                                transition={{ duration: 0.6, ease: "easeInOut" }}
+                                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12"
+                            />
 
-                        <motion.button
-                            whileHover={{ scale: 1.05, backgroundColor: "rgba(255,255,255,0.1)" }}
-                            whileTap={{ scale: 0.95 }}
-                            className="px-8 py-4 bg-white/5 border border-white/10 text-white rounded-2xl font-bold text-lg flex items-center justify-center gap-3 backdrop-blur-sm"
-                        >
-                            <Play size={20} className="fill-white" />
-                            Watch Demo
+                            <Sparkles size={22} className="group-hover:rotate-12 transition-transform duration-300" />
+                            <span>Get Started</span>
+                            <MousePointer2 size={20} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300" />
                         </motion.button>
                     </div>
                 </motion.div>

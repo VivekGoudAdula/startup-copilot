@@ -42,30 +42,30 @@ export const Footer: React.FC = () => {
                         transition={{ duration: 0.6 }}
                         className="lg:col-span-2 flex flex-col items-center md:items-start"
                     >
-                        <div className="flex items-center gap-3 mb-6 group cursor-default">
-                            <div className="w-10 h-10 bg-[#4F9CF9]/10 rounded-xl flex items-center justify-center text-[#4F9CF9] group-hover:shadow-[0_0_20px_rgba(79,156,249,0.3)] transition-all">
-                                <Compass size={24} />
+                        <div className="flex items-center gap-4 mb-8 group cursor-default">
+                            <div className="w-14 h-14 bg-gradient-to-br from-[#4F9CF9]/20 to-[#4F9CF9]/5 rounded-2xl flex items-center justify-center text-[#4F9CF9] shadow-[0_0_15px_rgba(79,156,249,0.15)] group-hover:shadow-[0_0_30px_rgba(79,156,249,0.4)] transition-all duration-300 border border-white/5">
+                                <Compass size={32} />
                             </div>
-                            <span className="text-2xl font-black text-white tracking-tight">Startup Copilot</span>
+                            <span className="text-3xl font-display font-black text-white tracking-tight italic text-glow">Startup Copilot</span>
                         </div>
 
-                        <p className="text-gray-400 font-medium mb-8 max-w-sm leading-relaxed">
+                        <p className="text-gray-400 font-medium mb-10 max-w-sm leading-relaxed text-lg opacity-80">
                             AI-powered startup execution. Build your vision with intelligence and speed.
                         </p>
 
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-5">
                             {socialLinks.map((social) => {
                                 const Icon = social.icon;
                                 return (
                                     <motion.a
                                         key={social.label}
                                         href={social.href}
-                                        whileHover={{ scale: 1.1, y: -2 }}
+                                        whileHover={{ scale: 1.15, y: -4 }}
                                         whileTap={{ scale: 0.95 }}
-                                        className="w-10 h-10 bg-[#111827] border border-white/[0.08] rounded-xl flex items-center justify-center text-gray-400 hover:text-white hover:border-[#4F9CF9]/30 hover:shadow-[0_0_15px_rgba(79,156,249,0.15)] transition-all"
+                                        className="w-12 h-12 bg-[#111827] border border-white/[0.08] rounded-2xl flex items-center justify-center text-gray-400 hover:text-white hover:border-[#4F9CF9]/40 hover:shadow-[0_0_20px_rgba(79,156,249,0.25)] transition-all duration-300"
                                         aria-label={social.label}
                                     >
-                                        <Icon size={20} />
+                                        <Icon size={24} />
                                     </motion.a>
                                 );
                             })}

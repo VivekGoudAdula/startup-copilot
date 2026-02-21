@@ -26,22 +26,22 @@ export const CommunityCTA: React.FC = () => {
     };
 
     return (
-        <section className="relative py-24 px-6 overflow-hidden bg-[#0B0F19]">
+        <section className="relative py-32 px-6 overflow-hidden bg-[#0B0F19]">
             {/* Background Glow */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#4F9CF9]/5 blur-[120px] rounded-full pointer-events-none" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#4F9CF9]/10 blur-[160px] rounded-full pointer-events-none" />
 
-            <div className="max-w-4xl mx-auto relative z-10">
+            <div className="max-w-6xl mx-auto relative z-10">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                    className="text-center mb-12"
+                    className="text-center mb-16"
                 >
-                    <h2 className="text-4xl md:text-5xl font-black text-white mb-4 tracking-tight">
-                        Join our Community
+                    <h2 className="text-6xl sm:text-7xl lg:text-8xl font-display font-black text-white mb-6 tracking-tight italic leading-[0.95]">
+                        Join our <span className="text-glow text-accent">Community.</span>
                     </h2>
-                    <p className="text-gray-400 text-lg md:text-xl font-medium">
+                    <p className="text-slate-400 text-xl md:text-2xl font-medium max-w-2xl mx-auto uppercase tracking-widest opacity-80">
                         Have any idea? Reach us out.
                     </p>
                 </motion.div>
