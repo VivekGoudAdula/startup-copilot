@@ -5,14 +5,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Lightbulb, 
-  Rocket, 
-  Layout, 
-  ChevronRight, 
-  Sparkles, 
+import {
+  Lightbulb,
+  Rocket,
+  Layout,
+  ChevronRight,
+  Sparkles,
   ArrowRight,
-  Info,
   Volume2,
   VolumeX,
   History,
@@ -20,10 +19,10 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
-import { 
-  BrowserRouter as Router, 
-  Routes, 
-  Route, 
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
   Navigate,
   useNavigate
 } from 'react-router-dom';
@@ -32,14 +31,14 @@ import { auth } from './lib/firebase';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { LandingPage } from './pages/LandingPage';
 import { AuthPage } from './pages/AuthPage';
-import { 
+import {
   LogOut,
   User as UserIcon
 } from 'lucide-react';
 
-import { 
-  validateIdea, 
-  generateRoadmap, 
+import {
+  validateIdea,
+  generateRoadmap,
   generateCopy,
   type ValidationResponse,
   type RoadmapResponse,
@@ -64,7 +63,7 @@ function Dashboard() {
   const [competitors, setCompetitors] = useState('');
   const [focus, setFocus] = useState<FocusType>('saas');
   const [tone, setTone] = useState<ToneType>('bold');
-  
+
   const [isGenerating, setIsGenerating] = useState(false);
   const [reaction, setReaction] = useState<'happy' | 'thinking' | 'surprised' | undefined>();
   const [soundEnabled, setSoundEnabled] = useState(false);
@@ -72,6 +71,7 @@ function Dashboard() {
   const [validationResult, setValidationResult] = useState<ValidationResponse | null>(null);
   const [roadmapResult, setRoadmapResult] = useState<RoadmapResponse | null>(null);
   const [copyResult, setCopyResult] = useState<CopyResponse | null>(null);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   const [history, setHistory] = useState<{ id: string; idea: string; type: Tab; timestamp: number }[]>([]);
 
@@ -94,15 +94,11 @@ function Dashboard() {
 
   const handleGenerate = async () => {
     if (!idea) return;
-    
-    if (soundEnabled) {
-      const meow = new Audio('https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3');
-      meow.play().catch(() => {});
-    }
 
     setIsGenerating(true);
     setReaction('thinking');
-    
+    setApiError(null);
+
     try {
       if (activeTab === 'validate') {
         const result = await validateIdea(idea, audience, competitors);
@@ -115,6 +111,8 @@ function Dashboard() {
             origin: { y: 0.6 },
             colors: ['#6366f1', '#10b981', '#f59e0b']
           });
+        } else {
+          setReaction('happy');
         }
       } else if (activeTab === 'roadmap') {
         const result = await generateRoadmap(idea, focus);
@@ -126,9 +124,15 @@ function Dashboard() {
         setReaction('happy');
       }
       saveToHistory(activeTab);
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
       setReaction('surprised');
+      const msg = error?.message || 'Unknown error';
+      if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('CORS')) {
+        setApiError('Cannot reach the backend. Make sure the Python server is running on port 8000: python -m uvicorn main:app --reload --port 8000');
+      } else {
+        setApiError(msg);
+      }
     } finally {
       setIsGenerating(false);
       setTimeout(() => setReaction(undefined), 3000);
@@ -150,7 +154,7 @@ function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFDFF] font-sans text-slate-900 selection:bg-indigo-100 selection:text-indigo-900">
+    <div className="min-h-screen bg-[#FDFDFF] font-sans text-slate-900 selection:bg-indigo-100 selection:text-indigo-900" style={{ background: 'radial-gradient(ellipse at 20% 0%, rgba(99,102,241,0.06) 0%, transparent 50%), radial-gradient(ellipse at 80% 100%, rgba(139,92,246,0.05) 0%, transparent 50%), #FDFDFF' }}>
       {/* Background Gradients */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
         <div className="absolute top-0 left-1/4 w-[50%] h-[50%] bg-indigo-100/30 blur-[120px] rounded-full animate-pulse" />
@@ -174,6 +178,21 @@ function Dashboard() {
           </div>
 
           <div className="flex items-center gap-6">
+            {/* AI Status */}
+            <motion.div
+              animate={{ opacity: [0.7, 1, 0.7] }}
+              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+              className="hidden lg:flex items-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-100 rounded-2xl"
+            >
+              <motion.div
+                className="w-2 h-2 rounded-full bg-emerald-500"
+                animate={{ scale: [1, 1.35, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+              />
+              <span className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">
+                {isGenerating ? '🐾 Reviewing market...' : 'AI Co-Founder Online'}
+              </span>
+            </motion.div>
             <div className="hidden lg:flex items-center gap-4 px-5 py-2.5 bg-slate-50 rounded-2xl border border-slate-100 shadow-sm">
               <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center shadow-sm border border-slate-100">
                 <UserIcon size={16} className="text-indigo-600" />
@@ -183,9 +202,9 @@ function Dashboard() {
                 <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Pro Founder</span>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-2">
-              <button 
+              <button
                 onClick={() => setSoundEnabled(!soundEnabled)}
                 className={cn(
                   "p-3 rounded-2xl transition-all shadow-sm border",
@@ -195,7 +214,7 @@ function Dashboard() {
               >
                 {soundEnabled ? <Volume2 size={20} /> : <VolumeX size={20} />}
               </button>
-              <button 
+              <button
                 onClick={handleLogout}
                 className="p-3 bg-white border border-slate-100 rounded-2xl transition-all shadow-sm text-slate-400 hover:text-rose-500 hover:border-rose-100 hover:bg-rose-50"
                 title="Logout"
@@ -213,7 +232,7 @@ function Dashboard() {
           <aside className="lg:col-span-4 space-y-10">
             <div className="bg-white p-10 rounded-[3.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.04)] border border-slate-100 space-y-10 relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500" />
-              
+
               <div className="space-y-8">
                 <div className="space-y-3">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2 ml-1">
@@ -293,20 +312,23 @@ function Dashboard() {
                 )}
               </div>
 
-              <button
+              <motion.button
                 onClick={handleGenerate}
                 disabled={isGenerating || !idea}
-                className="w-full py-5 bg-indigo-600 text-white rounded-[2rem] font-black text-lg flex items-center justify-center gap-3 shadow-2xl shadow-indigo-200 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 group"
+                whileHover={{ scale: idea ? 1.02 : 1 }}
+                whileTap={{ scale: 0.97 }}
+                className="w-full py-5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-[2rem] font-black text-lg flex items-center justify-center gap-3 shadow-2xl shadow-indigo-200/60 hover:shadow-indigo-300/60 disabled:opacity-50 disabled:cursor-not-allowed transition-all group relative overflow-hidden"
               >
+                <span className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out pointer-events-none rounded-[2rem]" />
                 {isGenerating ? (
                   <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
                   <>
-                    Generate Insights
-                    <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                    <span className="relative z-10">Generate Insights</span>
+                    <ArrowRight size={20} className="relative z-10 group-hover:translate-x-1 transition-transform" />
                   </>
                 )}
-              </button>
+              </motion.button>
             </div>
 
             {/* History Card */}
@@ -316,7 +338,7 @@ function Dashboard() {
                   <History size={14} className="text-indigo-500" />
                   Recent Ideas
                 </h3>
-                <button 
+                <button
                   onClick={() => { setHistory([]); localStorage.removeItem('startup_copilot_history'); }}
                   className="p-2 hover:bg-rose-50 rounded-xl transition-colors text-slate-300 hover:text-rose-500"
                 >
@@ -351,11 +373,24 @@ function Dashboard() {
           {/* Content Area */}
           <div className="lg:col-span-8 space-y-12">
             {/* Tabs */}
-            <nav className="flex p-2 bg-white rounded-[2rem] shadow-xl shadow-indigo-500/5 border border-slate-100 w-fit">
+            <nav className="flex p-2 bg-white rounded-[2rem] shadow-xl shadow-indigo-500/8 border border-slate-100 w-fit relative">
               <TabButton active={activeTab === 'validate'} onClick={() => setActiveTab('validate')} icon={<Lightbulb size={18} />} label="Validation" />
               <TabButton active={activeTab === 'roadmap'} onClick={() => setActiveTab('roadmap')} icon={<Rocket size={18} />} label="Roadmap" />
               <TabButton active={activeTab === 'copy'} onClick={() => setActiveTab('copy')} icon={<Layout size={18} />} label="Copywriting" />
             </nav>
+
+            {/* API Error Banner */}
+            {apiError && (
+              <div className="flex items-start gap-3 p-5 bg-rose-50 border border-rose-200 rounded-3xl text-rose-700">
+                <div className="mt-0.5 shrink-0 w-5 h-5 rounded-full bg-rose-500 flex items-center justify-center">
+                  <span className="text-white text-[10px] font-black">!</span>
+                </div>
+                <div>
+                  <p className="text-sm font-bold">Error</p>
+                  <p className="text-xs mt-0.5 font-medium opacity-80">{apiError}</p>
+                </div>
+              </div>
+            )}
 
             {/* Results Display */}
             <AnimatePresence mode="wait">
@@ -372,58 +407,68 @@ function Dashboard() {
                 {!isGenerating && activeTab === 'copy' && copyResult && <CopyGenerator data={copyResult} />}
 
                 {!isGenerating && !validationResult && !roadmapResult && !copyResult && (
-                  <div className="h-[600px] flex flex-col items-center justify-center text-center space-y-10 bg-white/40 rounded-[4rem] border-4 border-dashed border-indigo-100/50">
-                    <motion.div 
-                      animate={{ y: [0, -15, 0] }}
-                      transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                      className="w-32 h-32 bg-indigo-50 rounded-[2.5rem] flex items-center justify-center shadow-2xl shadow-indigo-100"
-                    >
-                      <Sparkles className="text-indigo-600" size={56} />
-                    </motion.div>
-                    <div className="max-w-md px-8">
-                      <h3 className="text-3xl font-black text-slate-900 tracking-tight">Ready to build?</h3>
-                      <p className="text-slate-500 text-lg mt-4 font-medium leading-relaxed">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.97 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="h-[600px] flex flex-col items-center justify-center text-center space-y-10 bg-gradient-to-br from-white/60 to-indigo-50/40 rounded-[4rem] border-2 border-dashed border-indigo-100/60 backdrop-blur-sm"
+                  >
+                    <div className="relative">
+                      <motion.div
+                        animate={{
+                          y: [0, -18, 0],
+                          rotate: [0, 3, -3, 0],
+                        }}
+                        transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                        className="w-36 h-36 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-[2.5rem] flex items-center justify-center shadow-2xl shadow-indigo-200/60"
+                      >
+                        <Sparkles className="text-indigo-600" size={60} />
+                      </motion.div>
+                      {/* Orbiting dot */}
+                      <motion.div
+                        className="absolute top-2 right-2 w-4 h-4 bg-indigo-500 rounded-full shadow-lg"
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+                        style={{ transformOrigin: '-20px 60px' }}
+                      />
+                    </div>
+                    <div className="max-w-md px-8 space-y-4">
+                      <h3 className="text-4xl font-black text-slate-900 tracking-tight">Ready to build? 🚀</h3>
+                      <p className="text-slate-500 text-base font-medium leading-relaxed">
                         Enter your startup idea on the left and let your AI Co-Founder help you navigate the journey from zero to one.
                       </p>
+                      <button
+                        onClick={loadDemo}
+                        className="text-xs font-black text-indigo-500 uppercase tracking-widest hover:text-indigo-700 transition-colors bg-indigo-50 hover:bg-indigo-100 px-5 py-2.5 rounded-2xl"
+                      >
+                        ✨ Try a Demo Idea
+                      </button>
                     </div>
-                  </div>
+                  </motion.div>
                 )}
 
                 {isGenerating && (
-                  <div className="h-[600px] flex flex-col items-center justify-center text-center space-y-10">
-                    {/* The cat will be dancing in the middle via CatMascot overlay */}
-                    <div className="space-y-4">
+                  <div className="h-[600px] flex flex-col items-center justify-center text-center space-y-6">
+                    <div className="space-y-3">
                       <h3 className="text-3xl font-black text-slate-900 tracking-tight">Consulting the Board...</h3>
-                      <p className="text-slate-500 text-lg font-medium">Our AI cats are crunching market data and competitor insights.</p>
+                      <p className="text-slate-500 text-base font-medium">Our AI Co-Founder is crunching market data.</p>
+                    </div>
+                    {/* Shimmer skeleton cards */}
+                    <div className="w-full max-w-lg space-y-3 mt-4">
+                      {[100, 75, 85, 60].map((w, i) => (
+                        <motion.div
+                          key={i}
+                          className="h-12 rounded-2xl"
+                          style={{ width: `${w}%`, background: 'linear-gradient(90deg, #e0e7ff 25%, #c7d2fe 50%, #e0e7ff 75%)', backgroundSize: '200% 100%' }}
+                          animate={{ backgroundPosition: ['200% 0', '-200% 0'] }}
+                          transition={{ duration: 1.5, repeat: Infinity, ease: 'linear', delay: i * 0.15 }}
+                        />
+                      ))}
                     </div>
                   </div>
                 )}
               </motion.div>
             </AnimatePresence>
 
-            {/* Info Footer */}
-            <footer className="bg-slate-900 rounded-[3.5rem] p-10 text-white overflow-hidden relative shadow-2xl">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 blur-[100px] rounded-full -translate-y-1/2 translate-x-1/2" />
-              <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-10">
-                <div className="flex items-center gap-6">
-                  <div className="p-4 bg-white/10 rounded-[1.5rem] backdrop-blur-md border border-white/10">
-                    <Info size={32} className="text-indigo-400" />
-                  </div>
-                  <div>
-                    <h4 className="font-black text-xl">Hackathon Mode Active</h4>
-                    <p className="text-slate-400 text-sm font-medium mt-1">Powered by Gemini 3.1 Pro & React 19</p>
-                  </div>
-                </div>
-                <div className="flex flex-wrap justify-center gap-4">
-                  <div className="px-6 py-3 bg-white/5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] backdrop-blur-md border border-white/5">
-                    Vibe Log: 100% Optimized
-                  </div>
-                  <div className="px-6 py-3 bg-white/5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] backdrop-blur-md border border-white/5">
-                    Purr-formance: High
-                  </div>
-                </div>
-              </div>
-            </footer>
           </div>
         </div>
       </main>
@@ -456,13 +501,13 @@ export default function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<AuthPage mode="login" />} />
           <Route path="/signup" element={<AuthPage mode="signup" />} />
-          <Route 
-            path="/dashboard" 
+          <Route
+            path="/dashboard"
             element={
               <ProtectedRoute>
                 <Dashboard />
               </ProtectedRoute>
-            } 
+            }
           />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
