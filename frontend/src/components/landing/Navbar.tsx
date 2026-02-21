@@ -41,7 +41,7 @@ export const Navbar: React.FC = () => {
                 <Link to="/" className="flex items-center gap-2 group relative z-10 transition-transform active:scale-95">
                     <div className="relative">
                         <img
-                            src="/src/public/images/logo.png"
+                            src="/logo.png"
                             alt="Startup Copilot Logo"
                             className="h-12 w-auto object-contain brightness-110 group-hover:drop-shadow-[0_0_8px_rgba(79,156,249,0.5)] transition-all"
                         />
