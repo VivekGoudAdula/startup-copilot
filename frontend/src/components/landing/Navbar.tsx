@@ -30,8 +30,8 @@ export const Navbar: React.FC = () => {
                 }`}
         >
             <div className={`max-w-7xl mx-auto flex items-center justify-between transition-all duration-500 rounded-2xl px-6 py-2 border border-white/[0.05] relative overflow-hidden ${isScrolled
-                    ? 'bg-[#0B0F19]/80 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] border-white/[0.08]'
-                    : 'bg-transparent'
+                ? 'bg-[#0B0F19]/80 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] border-white/[0.08]'
+                : 'bg-transparent'
                 }`}>
                 {/* Background Glow when scrolled */}
                 {isScrolled && (
@@ -84,19 +84,9 @@ export const Navbar: React.FC = () => {
                 <div className="flex items-center gap-3 relative z-10">
                     <Link
                         to="/login"
-                        className="hidden sm:block text-sm font-black text-slate-400 hover:text-white transition-colors px-4 py-2 hover:bg-white/5 rounded-lg uppercase tracking-wider"
+                        className="text-sm font-black text-slate-400 hover:text-white transition-colors px-4 py-2 hover:bg-white/5 rounded-lg uppercase tracking-wider"
                     >
                         Login
-                    </Link>
-                    <Link
-                        to="/signup"
-                        className="group relative px-6 py-2.5 bg-accent rounded-xl text-sm font-black text-white overflow-hidden transition-all hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(79,156,249,0.3)] hover:shadow-[0_0_30px_rgba(79,156,249,0.5)]"
-                    >
-                        <span className="relative z-10 flex items-center gap-2 uppercase tracking-tight">
-                            Get Started
-                            <Sparkles size={14} className="animate-pulse" />
-                        </span>
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                     </Link>
 
                     {/* Mobile Menu Toggle */}

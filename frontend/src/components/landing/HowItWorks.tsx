@@ -30,9 +30,9 @@ export const HowItWorks: React.FC = () => {
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        className="text-4xl md:text-5xl font-display font-black text-white italic"
+                        className="text-6xl md:text-8xl font-display font-black text-white italic"
                     >
-                        How it <span className="text-accent">works.</span>
+                        How it <span className="text-glow text-accent">works.</span>
                     </motion.h2>
                 </div>
 

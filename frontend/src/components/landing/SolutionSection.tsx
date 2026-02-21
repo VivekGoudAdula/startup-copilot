@@ -7,23 +7,22 @@ export const SolutionSection: React.FC = () => {
     const [activeAccordion, setActiveAccordion] = useState<number | null>(0);
 
     return (
-        <section id="features" className="py-32 bg-background relative overflow-hidden">
+        <section id="features" className="pt-12 pb-32 bg-background relative overflow-hidden">
             <div className="max-w-7xl mx-auto px-6">
-                <div className="text-center max-w-3xl mx-auto mb-20 space-y-6">
+                <div className="text-center max-w-5xl mx-auto mb-24 space-y-6">
                     <motion.h2
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        className="text-5xl md:text-7xl font-display font-black leading-tight text-white italic"
+                        className="text-4xl sm:text-6xl lg:text-7xl font-display font-black leading-tight text-white italic whitespace-nowrap"
                     >
-                        From idea → clarity → <span className="text-accent">execution.</span>
+                        From idea <span className="text-accent/50 mx-2 text-3xl sm:text-5xl">→</span> clarity <span className="text-accent/50 mx-2 text-3xl sm:text-5xl">→</span> <span className="text-glow text-accent">execution.</span>
                     </motion.h2>
                 </div>
 
-                <div className="grid lg:grid-cols-3 gap-8">
+                <div className="grid lg:grid-cols-3 gap-8 items-stretch">
                     {/* Pillar 1: Idea Validation */}
                     <FeatureCard
-                        icon={<Target className="text-accent" />}
                         title="1️⃣ Idea Validation"
                         glowColor="rgba(79, 156, 249, 0.4)"
                         neonColors="from-blue-500 via-cyan-400 to-blue-700"
@@ -70,7 +69,6 @@ export const SolutionSection: React.FC = () => {
 
                     {/* Pillar 2: Roadmap Generator */}
                     <FeatureCard
-                        icon={<Map className="text-purple-400" />}
                         title="2️⃣ MVP Roadmap"
                         glowColor="rgba(192, 132, 252, 0.4)"
                         neonColors="from-purple-600 via-fuchsia-500 to-pink-600"
@@ -109,7 +107,6 @@ export const SolutionSection: React.FC = () => {
 
                     {/* Pillar 3: Copy Generator */}
                     <FeatureCard
-                        icon={<PenTool className="text-emerald-400" />}
                         title="3️⃣ Landing Copy"
                         glowColor="rgba(52, 211, 153, 0.4)"
                         neonColors="from-emerald-500 via-teal-400 to-green-600"
@@ -141,25 +138,25 @@ export const SolutionSection: React.FC = () => {
     );
 };
 
-const FeatureCard = ({ icon, title, children, glowColor, neonColors }: { icon: React.ReactNode, title: string, children: React.ReactNode, glowColor: string, neonColors?: string }) => (
+const FeatureCard = ({ title, children, glowColor, neonColors }: { title: string, children: React.ReactNode, glowColor: string, neonColors?: string }) => (
     <motion.div
         whileHover={{ y: -10 }}
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.5, ease: "easeOut" }}
+        className="h-full"
     >
         <NeonGradient
             colors={neonColors || "from-pink-600 via-purple-600 to-blue-500"}
             rounded="rounded-[2.5rem]"
             className="h-full"
         >
-            <div className="p-8 rounded-[2.5rem] bg-[#0a0a12] h-full">
-                <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center mb-6">
-                    {icon}
+            <div className="p-8 rounded-[2.5rem] bg-[#0a0a12] h-full flex flex-col">
+                <h3 className="text-2xl font-display font-black text-white italic mb-2">{title}</h3>
+                <div className="flex-grow">
+                    {children}
                 </div>
-                <h3 className="text-2xl font-display font-black text-white italic">{title}</h3>
-                {children}
             </div>
         </NeonGradient>
     </motion.div>
