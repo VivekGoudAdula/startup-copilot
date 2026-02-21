@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Target, Map, PenTool, Check, ChevronDown } from 'lucide-react';
+import NeonGradient from '../NeonGradient';
 
 export const SolutionSection: React.FC = () => {
     const [activeAccordion, setActiveAccordion] = useState<number | null>(0);
@@ -25,6 +26,7 @@ export const SolutionSection: React.FC = () => {
                         icon={<Target className="text-accent" />}
                         title="1️⃣ Idea Validation"
                         glowColor="rgba(79, 156, 249, 0.4)"
+                        neonColors="from-blue-500 via-cyan-400 to-blue-700"
                     >
                         <div className="space-y-6 mt-6">
                             <div className="relative w-32 h-32 mx-auto">
@@ -71,6 +73,7 @@ export const SolutionSection: React.FC = () => {
                         icon={<Map className="text-purple-400" />}
                         title="2️⃣ MVP Roadmap"
                         glowColor="rgba(192, 132, 252, 0.4)"
+                        neonColors="from-purple-600 via-fuchsia-500 to-pink-600"
                     >
                         <div className="space-y-3 mt-6">
                             {[
@@ -109,6 +112,7 @@ export const SolutionSection: React.FC = () => {
                         icon={<PenTool className="text-emerald-400" />}
                         title="3️⃣ Landing Copy"
                         glowColor="rgba(52, 211, 153, 0.4)"
+                        neonColors="from-emerald-500 via-teal-400 to-green-600"
                     >
                         <div className="mt-6 space-y-4">
                             <div className="aspect-video rounded-xl bg-white/5 border border-white/5 p-4 flex flex-col justify-between">
@@ -137,24 +141,26 @@ export const SolutionSection: React.FC = () => {
     );
 };
 
-const FeatureCard = ({ icon, title, children, glowColor }: { icon: React.ReactNode, title: string, children: React.ReactNode, glowColor: string }) => (
+const FeatureCard = ({ icon, title, children, glowColor, neonColors }: { icon: React.ReactNode, title: string, children: React.ReactNode, glowColor: string, neonColors?: string }) => (
     <motion.div
-        whileHover={{ y: -10, rotateX: 2, rotateY: 2 }}
+        whileHover={{ y: -10 }}
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        className="p-8 rounded-[2.5rem] glass-card border-white/5 relative group transition-all duration-500"
-        style={{ transformStyle: 'preserve-3d' }}
     >
-        <div
-            className="absolute inset-x-10 -bottom-2 h-px transition-opacity opacity-0 group-hover:opacity-100"
-            style={{ background: `linear-gradient(90deg, transparent, ${glowColor}, transparent)` }}
-        />
-        <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center mb-6">
-            {icon}
-        </div>
-        <h3 className="text-2xl font-display font-black text-white italic">{title}</h3>
-        {children}
+        <NeonGradient
+            colors={neonColors || "from-pink-600 via-purple-600 to-blue-500"}
+            rounded="rounded-[2.5rem]"
+            className="h-full"
+        >
+            <div className="p-8 rounded-[2.5rem] bg-[#0a0a12] h-full">
+                <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center mb-6">
+                    {icon}
+                </div>
+                <h3 className="text-2xl font-display font-black text-white italic">{title}</h3>
+                {children}
+            </div>
+        </NeonGradient>
     </motion.div>
 );
