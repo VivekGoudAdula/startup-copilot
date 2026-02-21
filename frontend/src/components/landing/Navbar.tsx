@@ -13,7 +13,7 @@ export const Navbar: React.FC = () => {
             <div className="max-w-7xl mx-auto flex items-center justify-between glass-card rounded-2xl px-6 py-2 border-border-subtle">
                 <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
                     <img
-                        src="/src/public/images/Catlogo.png"
+                        src="/src/public/images/logo.png"
                         alt="Startup Copilot Logo"
                         className="h-16 w-auto object-contain"
                     />
