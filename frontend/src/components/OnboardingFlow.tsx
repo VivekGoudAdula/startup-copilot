@@ -20,6 +20,7 @@ import {
 import { cn } from '../lib/utils';
 import { CatMascot } from './CatMascot';
 import { AnimatedCat } from './AnimatedCat';
+import { CopilotCat } from './auth/CopilotCat';
 import { suggestIdeas, type SuggestedIdea } from '../services/ai';
 
 interface OnboardingFlowProps {
@@ -121,6 +122,26 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onBa
         { id: 'mobile', label: 'Mobile App', icon: <Sparkles size={18} /> },
         { id: 'agent', label: 'AI Agent', icon: <Cpu size={18} /> },
     ];
+
+    // Map step → cat mode
+    const catMode: 'login' | 'signup' | 'thinking' | 'happy' | 'concerned' =
+        isGeneratingIdeas ? 'thinking'
+            : step === 'pick_idea' ? 'happy'
+                : step === 'welcome' ? 'happy'
+                    : step === 'idea_step3' || step === 'create_step3' ? 'signup'
+                        : 'login';
+
+    // Contextual tip per step
+    const catTip: Record<Step, string> = {
+        welcome: 'Ready when you are, founder! 🚀',
+        idea_step1: 'Tell me your big idea — no filter needed!',
+        idea_step2: 'Who are you building this for?',
+        idea_step3: 'Optional: knowing rivals helps me go deeper.',
+        create_step1: 'What problem keeps you up at night?',
+        create_step2: 'Pick the world you want to play in!',
+        create_step3: 'What kind of product do you picture?',
+        pick_idea: 'These are hand-picked for you — click one to dive in!',
+    };
 
     return (
         <div className="fixed inset-0 z-[100] bg-[#FDFDFF] flex items-center justify-center p-6 overflow-hidden uppercase italic">
@@ -443,6 +464,37 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onBa
 
             {/* Cinematic Loading for Idea Suggestion */}
             <CatMascot isGenerating={isGeneratingIdeas} soundEnabled={true} />
+
+            {/* ── Persistent CopilotCat companion ── */}
+            {!isGeneratingIdeas && (
+                <motion.div
+                    className="fixed bottom-32 right-38 z-[120] flex flex-col items-end gap-2"
+                    initial={{ x: 120, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ type: 'spring', stiffness: 80, damping: 18, delay: 0.4 }}
+                >
+                    {/* Speech bubble */}
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={step}
+                            initial={{ opacity: 0, y: 8, scale: 0.9 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: -8, scale: 0.9 }}
+                            transition={{ duration: 0.3 }}
+                            className="max-w-[200px] bg-white border border-slate-100 shadow-lg rounded-2xl rounded-br-none px-4 py-3 text-xs font-semibold text-slate-600 normal-case not-italic leading-snug"
+                        >
+                            {catTip[step]}
+                            {/* Bubble tail */}
+                            <span className="absolute -bottom-2 right-4 w-3 h-3 bg-white border-r border-b border-slate-100 rotate-45" />
+                        </motion.div>
+                    </AnimatePresence>
+
+                    {/* The cat — scaled down to companion size */}
+                    <div className="w-28 h-28 -mt-1">
+                        <CopilotCat mode={catMode} />
+                    </div>
+                </motion.div>
+            )}
         </div>
     );
 };
