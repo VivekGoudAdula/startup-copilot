@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { MousePointer2, Play } from 'lucide-react';
-import { AnimatedCat } from '../AnimatedCat';
+import { HeroRobotScene } from './HeroRobotScene';
 
 export const HeroSection: React.FC = () => {
     return (
@@ -101,13 +101,9 @@ export const HeroSection: React.FC = () => {
                     className="relative perspective-1000"
                     style={{ perspective: '1000px' }}
                 >
-                    <motion.div
-                        whileHover={{ rotateY: 5, rotateX: -5 }}
-                        transition={{ type: "spring", stiffness: 100 }}
-                        className="relative z-10 glass-card p-12 rounded-[3rem] border-white/10"
-                    >
-                        <AnimatedCat state="idle" className="scale-125" />
-                    </motion.div>
+                    <div className="relative z-10 w-full h-[500px]">
+                        <HeroRobotScene />
+                    </div>
 
                     {/* Decorative glow behind cat */}
                     <div className="absolute inset-0 bg-accent/20 blur-[80px] rounded-full -z-10" />

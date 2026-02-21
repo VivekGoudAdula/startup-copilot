@@ -1,63 +1,113 @@
+'use client';
+
 import React from 'react';
-import { Sparkles, Github, Twitter, Linkedin } from 'lucide-react';
+import { motion } from 'motion/react';
+import { Github, Twitter, Linkedin, Compass } from 'lucide-react';
+
+const socialLinks = [
+    { icon: Github, href: '#', label: 'GitHub' },
+    { icon: Twitter, href: '#', label: 'Twitter' },
+    { icon: Linkedin, href: '#', label: 'LinkedIn' },
+];
+
+const footerLinks = [
+    {
+        title: 'Product',
+        links: [
+            { name: 'Features', href: '#' },
+            { name: 'Roadmap', href: '#' },
+            { name: 'Integrations', href: '#' },
+        ],
+    },
+    {
+        title: 'Company',
+        links: [
+            { name: 'About', href: '#' },
+            { name: 'GitHub', href: 'https://github.com' },
+            { name: 'Privacy', href: '#' },
+        ],
+    },
+];
 
 export const Footer: React.FC = () => {
     return (
-        <footer className="py-20 bg-background border-t border-white/5">
-            <div className="max-w-7xl mx-auto px-6">
-                <div className="grid md:grid-cols-4 gap-12 mb-16">
-                    <div className="col-span-2 space-y-6">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-accent rounded-xl flex items-center justify-center">
-                                <Sparkles className="text-white" size={20} />
+        <footer className="bg-[#0B0F19] pt-24 pb-12 px-6 border-t border-white/[0.05]">
+            <div className="max-w-7xl mx-auto">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mb-20 text-center md:text-left">
+                    {/* Column 1 - Brand */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6 }}
+                        className="lg:col-span-2 flex flex-col items-center md:items-start"
+                    >
+                        <div className="flex items-center gap-3 mb-6 group cursor-default">
+                            <div className="w-10 h-10 bg-[#4F9CF9]/10 rounded-xl flex items-center justify-center text-[#4F9CF9] group-hover:shadow-[0_0_20px_rgba(79,156,249,0.3)] transition-all">
+                                <Compass size={24} />
                             </div>
-                            <span className="font-display font-black text-xl text-white">Startup Copilot</span>
+                            <span className="text-2xl font-black text-white tracking-tight">Startup Copilot</span>
                         </div>
-                        <p className="text-slate-500 max-w-sm leading-relaxed">
-                            AI-powered startup execution. We help you move from idea to market-ready MVP in weeks, not months.
+
+                        <p className="text-gray-400 font-medium mb-8 max-w-sm leading-relaxed">
+                            AI-powered startup execution. Build your vision with intelligence and speed.
                         </p>
-                        <div className="flex gap-4">
-                            <SocialLink icon={<Github size={20} />} />
-                            <SocialLink icon={<Twitter size={20} />} />
-                            <SocialLink icon={<Linkedin size={20} />} />
+
+                        <div className="flex items-center gap-4">
+                            {socialLinks.map((social) => {
+                                const Icon = social.icon;
+                                return (
+                                    <motion.a
+                                        key={social.label}
+                                        href={social.href}
+                                        whileHover={{ scale: 1.1, y: -2 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        className="w-10 h-10 bg-[#111827] border border-white/[0.08] rounded-xl flex items-center justify-center text-gray-400 hover:text-white hover:border-[#4F9CF9]/30 hover:shadow-[0_0_15px_rgba(79,156,249,0.15)] transition-all"
+                                        aria-label={social.label}
+                                    >
+                                        <Icon size={20} />
+                                    </motion.a>
+                                );
+                            })}
                         </div>
-                    </div>
+                    </motion.div>
 
-                    <div className="space-y-6">
-                        <h4 className="text-white font-bold uppercase tracking-widest text-xs">Product</h4>
-                        <ul className="space-y-4 text-slate-500 text-sm font-medium">
-                            <li><a href="#features" className="hover:text-accent transition-colors">Features</a></li>
-                            <li><a href="#roadmap" className="hover:text-accent transition-colors">Roadmap</a></li>
-                            <li><a href="#" className="hover:text-accent transition-colors">Integrations</a></li>
-                        </ul>
-                    </div>
-
-                    <div className="space-y-6">
-                        <h4 className="text-white font-bold uppercase tracking-widest text-xs">Company</h4>
-                        <ul className="space-y-4 text-slate-500 text-sm font-medium">
-                            <li><a href="#" className="hover:text-accent transition-colors">About Us</a></li>
-                            <li><a href="#" className="hover:text-accent transition-colors">GitHub</a></li>
-                            <li><a href="#" className="hover:text-accent transition-colors">Privacy</a></li>
-                        </ul>
-                    </div>
+                    {/* Column 2 & 3 - Links */}
+                    {footerLinks.map((section, sectionIdx) => (
+                        <motion.div
+                            key={section.title}
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.6, delay: 0.1 * (sectionIdx + 1) }}
+                        >
+                            <h3 className="text-white font-black uppercase tracking-widest text-xs mb-8">
+                                {section.title}
+                            </h3>
+                            <ul className="space-y-4">
+                                {section.links.map((link) => (
+                                    <li key={link.name}>
+                                        <a
+                                            href={link.href}
+                                            className="text-gray-400 hover:text-white transition-colors font-medium text-sm inline-block group relative"
+                                        >
+                                            <span>{link.name}</span>
+                                            <span className="absolute -bottom-1 left-0 w-0 h-px bg-[#4F9CF9] transition-all group-hover:w-full"></span>
+                                        </a>
+                                    </li>
+                                ))}
+                            </ul>
+                        </motion.div>
+                    ))}
                 </div>
 
-                <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-6">
-                    <p className="text-slate-600 text-sm font-medium">
-                        © 2026 Startup Copilot. Built with ❤️ for Builders.
+                {/* Bottom Bar */}
+                <div className="pt-8 border-t border-white/[0.05] flex flex-col md:flex-row items-center justify-center">
+                    <p className="text-gray-500 text-sm font-medium tracking-tight">
+                        © {new Date().getFullYear()} Startup Copilot. All rights reserved.
                     </p>
-                    <div className="flex gap-8 text-slate-600 text-sm font-medium">
-                        <span>Hackathon Edition</span>
-                        <span>Version 1.0.4</span>
-                    </div>
                 </div>
             </div>
         </footer>
     );
 };
-
-const SocialLink = ({ icon }: { icon: React.ReactNode }) => (
-    <a href="#" className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-slate-400 hover:bg-accent/20 hover:text-accent transition-all">
-        {icon}
-    </a>
-);

@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { MousePointer2, Cpu, Zap } from 'lucide-react';
+import NeonGradient from '../NeonGradient';
 
 const steps = [
     {
@@ -57,12 +58,22 @@ export const HowItWorks: React.FC = () => {
                                 transition={{ delay: i * 0.2 }}
                                 className="flex flex-col items-center text-center space-y-6 group"
                             >
-                                <motion.div
-                                    whileHover={{ scale: 1.1, rotate: 5 }}
-                                    className="w-20 h-20 rounded-2xl bg-card border border-white/10 flex items-center justify-center text-accent shadow-xl group-hover:border-accent/40 transition-colors"
+                                <NeonGradient
+                                    rounded="rounded-2xl"
+                                    padding="p-[2px]"
+                                    colors={
+                                        i === 0 ? "from-pink-500 via-purple-500 to-blue-500"
+                                            : i === 1 ? "from-blue-500 via-cyan-400 to-teal-500"
+                                                : "from-emerald-500 via-green-400 to-teal-500"
+                                    }
                                 >
-                                    {step.icon}
-                                </motion.div>
+                                    <motion.div
+                                        whileHover={{ scale: 1.1, rotate: 5 }}
+                                        className="w-20 h-20 rounded-2xl bg-[#0a0a12] flex items-center justify-center text-accent shadow-xl transition-colors"
+                                    >
+                                        {step.icon}
+                                    </motion.div>
+                                </NeonGradient>
                                 <div className="space-y-2">
                                     <h3 className="text-2xl font-display font-black text-white italic">{step.title}</h3>
                                     <p className="text-slate-500 font-medium max-w-[200px]">{step.desc}</p>

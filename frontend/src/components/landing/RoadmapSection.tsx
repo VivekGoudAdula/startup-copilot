@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { Calendar, Rocket, Users, Shield } from 'lucide-react';
+import NeonGradient from '../NeonGradient';
 
 const milestones = [
     {
@@ -54,32 +55,42 @@ export const RoadmapSection: React.FC = () => {
                             {/* Timeline Point */}
                             <div className="absolute -left-[61px] top-0 w-6 h-6 rounded-full bg-background border-4 border-accent shadow-[0_0_15px_rgba(79,156,249,0.5)] z-10" />
 
-                            <div className="glass-card p-8 rounded-[2rem] border-white/10 hover:border-accent/30 group transition-all duration-500 hover:shadow-[0_0_40px_rgba(79,156,249,0.1)]">
-                                <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-                                    <span className="px-4 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-black text-slate-400 uppercase tracking-widest">
-                                        {ms.date}
-                                    </span>
-                                    <div className="flex items-center gap-2">
-                                        {ms.icon}
+                            <NeonGradient
+                                rounded="rounded-[2rem]"
+                                padding="p-[1.5px]"
+                                colors={
+                                    i === 0 ? "from-blue-500 via-cyan-400 to-blue-700"
+                                        : i === 1 ? "from-purple-600 via-fuchsia-500 to-pink-600"
+                                            : "from-emerald-500 via-teal-400 to-green-600"
+                                }
+                            >
+                                <div className="p-8 rounded-[2rem] bg-[#0a0a12] group transition-all duration-500">
+                                    <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+                                        <span className="px-4 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-black text-slate-400 uppercase tracking-widest">
+                                            {ms.date}
+                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            {ms.icon}
+                                        </div>
+                                    </div>
+
+                                    <h3 className="text-3xl font-display font-black text-white mb-4 italic group-hover:text-accent transition-colors">
+                                        {ms.title}
+                                    </h3>
+
+                                    <p className="text-slate-400 text-lg leading-relaxed mb-6">
+                                        {ms.desc}
+                                    </p>
+
+                                    <div className="flex flex-wrap gap-2">
+                                        {ms.items.map((item, j) => (
+                                            <span key={j} className="px-3 py-1 rounded-lg bg-white/5 border border-white/5 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                                                {item}
+                                            </span>
+                                        ))}
                                     </div>
                                 </div>
-
-                                <h3 className="text-3xl font-display font-black text-white mb-4 italic group-hover:text-accent transition-colors">
-                                    {ms.title}
-                                </h3>
-
-                                <p className="text-slate-400 text-lg leading-relaxed mb-6">
-                                    {ms.desc}
-                                </p>
-
-                                <div className="flex flex-wrap gap-2">
-                                    {ms.items.map((item, j) => (
-                                        <span key={j} className="px-3 py-1 rounded-lg bg-white/5 border border-white/5 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                                            {item}
-                                        </span>
-                                    ))}
-                                </div>
-                            </div>
+                            </NeonGradient>
                         </motion.div>
                     ))}
                 </div>

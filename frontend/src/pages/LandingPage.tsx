@@ -5,7 +5,7 @@ import { ProblemSection } from '../components/landing/ProblemSection';
 import { SolutionSection } from '../components/landing/SolutionSection';
 import { RoadmapSection } from '../components/landing/RoadmapSection';
 import { HowItWorks } from '../components/landing/HowItWorks';
-import { FinalCTA } from '../components/landing/FinalCTA';
+import { CommunityCTA } from '../components/landing/CommunityCTA';
 import { Footer } from '../components/landing/Footer';
 import { LoadingOverlay } from '../components/landing/LoadingOverlay';
 
@@ -57,7 +57,7 @@ export const LandingPage: React.FC = () => {
             handleStartBuilding();
           }
         }}>
-          <FinalCTA />
+          <CommunityCTA />
         </div>
       </main>
 
