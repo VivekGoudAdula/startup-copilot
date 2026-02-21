@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { MousePointer2, Cpu, Zap } from 'lucide-react';
+import { NeonGradientCard } from '../ui/NeonGradientCard';
 
 const steps = [
     {
@@ -57,12 +58,11 @@ export const HowItWorks: React.FC = () => {
                                 transition={{ delay: i * 0.2 }}
                                 className="flex flex-col items-center text-center space-y-6 group"
                             >
-                                <motion.div
-                                    whileHover={{ scale: 1.1, rotate: 5 }}
-                                    className="w-20 h-20 rounded-2xl bg-card border border-white/10 flex items-center justify-center text-accent shadow-xl group-hover:border-accent/40 transition-colors"
-                                >
-                                    {step.icon}
-                                </motion.div>
+                                <NeonGradientCard borderRadius="2xl" className="w-20 h-20">
+                                    <div className="w-full h-full flex items-center justify-center text-accent group-hover:text-glow transition-colors">
+                                        {step.icon}
+                                    </div>
+                                </NeonGradientCard>
                                 <div className="space-y-2">
                                     <h3 className="text-2xl font-display font-black text-white italic">{step.title}</h3>
                                     <p className="text-slate-500 font-medium max-w-[200px]">{step.desc}</p>

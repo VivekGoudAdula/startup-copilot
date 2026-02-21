@@ -4,11 +4,12 @@
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
-  
+
   --color-background: #0B0F19;
   --color-card: #111827;
   --color-accent: #4F9CF9;
-  --color-glow: #22d3ee; /* Neon cyan */
+  --color-glow: #22d3ee;
+  /* Neon cyan */
   --color-border-subtle: rgba(255, 255, 255, 0.08);
 }
 
@@ -22,23 +23,22 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  
+
   .glass-card {
-    @apply bg-card/50 backdrop-blur-xl border border-border-subtle shadow-[0_8px_32px_rgba(0,0,0,0.5)];
+    @apply bg-card/50 backdrop-blur-xl border border-border-subtle shadow-[0_8px_32px_rgba(0, 0, 0, 0.5)];
   }
 
   .premium-gradient {
-    background: linear-gradient(
-      -45deg, 
-      #0B0F19, 
-      #111827, 
-      #0f172a, 
-      #1e1b4b
-    );
+    background: linear-gradient(-45deg,
+        #0B0F19,
+        #111827,
+        #0f172a,
+        #1e1b4b);
     background-size: 400% 400%;
     animation: gradient-shift 15s ease infinite;
   }
@@ -50,7 +50,7 @@
   .glow-border {
     position: relative;
   }
-  
+
   .glow-border::after {
     content: '';
     position: absolute;
@@ -68,20 +68,55 @@
 }
 
 @keyframes gradient-shift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes move-gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 @keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0px); }
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
 }
 
 @keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 .animate-float {

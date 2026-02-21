@@ -1,78 +1,74 @@
 import React from 'react';
 import { motion } from 'motion/react';
+import { Sparkles } from 'lucide-react';
+import { AnimatedCat } from '../AnimatedCat';
 
-const problemCards = [
-    { text: "“Is this investable?”", color: "from-rose-500/20 to-transparent" },
-    { text: "“Who are competitors?”", color: "from-amber-500/20 to-transparent" },
-    { text: "“What do I build first?”", color: "from-blue-500/20 to-transparent" },
-    { text: "“Will anyone buy this?”", color: "from-emerald-500/20 to-transparent" }
+const painPoints = [
+    "No idea if market exists",
+    "Competitor confusion",
+    "No clear MVP roadmap",
+    "Weak landing copy"
 ];
 
 export const ProblemSection: React.FC = () => {
     return (
-        <section className="py-32 bg-background overflow-hidden">
-            <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-20 items-center">
-                <div className="space-y-8">
-                    <motion.h2
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
+        <section className="py-24 relative overflow-hidden bg-background">
+            {/* Background Glows */}
+            <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[500px] h-[500px] bg-accent/5 blur-[120px] rounded-full pointer-events-none" />
+
+            <div className="max-w-7xl mx-auto px-6 relative z-10">
+                <div className="grid lg:grid-cols-2 gap-16 items-center">
+
+                    {/* Left: Cat Animation in a Premium Card */}
+                    <motion.div
+                        initial={{ opacity: 0, x: -50 }}
+                        whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
-                        className="text-5xl md:text-7xl font-display font-black leading-tight text-white italic"
+                        transition={{ duration: 0.8 }}
+                        className="relative flex items-center justify-center p-8"
                     >
-                        Great ideas die in <br />
-                        <span className="text-rose-500">uncertainty.</span>
-                    </motion.h2>
+                        <AnimatedCat className="scale-[2] w-full max-w-[500px]" />
 
-                    <div className="space-y-6">
-                        {[
-                            "No idea if market exists",
-                            "Competitor confusion",
-                            "No clear MVP roadmap",
-                            "Weak landing copy"
-                        ].map((pain, i) => (
-                            <motion.div
-                                key={i}
-                                initial={{ opacity: 0, x: -20 }}
-                                whileInView={{ opacity: 1, x: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ delay: i * 0.1 }}
-                                className="flex items-center gap-4 text-xl text-slate-400"
-                            >
-                                <div className="w-2 h-2 rounded-full bg-rose-500/50" />
-                                {pain}
-                            </motion.div>
-                        ))}
-                    </div>
-                </div>
+                        {/* Background subtle glow to make the isolated cat pop */}
+                        <div className="absolute inset-0 bg-accent/5 blur-[100px] rounded-full -z-10" />
+                    </motion.div>
 
-                <div className="relative h-[400px] flex items-center justify-center">
-                    {problemCards.map((card, i) => (
+                    {/* Right: Content */}
+                    <div className="space-y-10">
                         <motion.div
-                            key={i}
-                            initial={{ opacity: 0, scale: 0.8, y: 50 }}
-                            whileInView={{
-                                opacity: 1,
-                                scale: 1,
-                                y: i * 20 - 40,
-                                rotate: i * 2 - 2,
-                                zIndex: problemCards.length - i
-                            }}
-                            whileHover={{
-                                scale: 1.05,
-                                y: i * 20 - 60,
-                                rotate: 0,
-                                transition: { type: "spring", stiffness: 300 }
-                            }}
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
-                            transition={{ delay: i * 0.1, type: "spring", stiffness: 100 }}
-                            className={`absolute w-72 p-8 glass-card border-white/5 bg-gradient-to-br ${card.color} rounded-2xl shadow-2xl backdrop-blur-2xl cursor-default group`}
+                            transition={{ duration: 0.6 }}
                         >
-                            <p className="text-lg font-bold text-white/80 group-hover:text-white transition-colors">
-                                {card.text}
-                            </p>
-                            <div className="absolute top-4 right-4 text-white/5 font-black text-6xl">?</div>
+                            <h2 className="text-5xl md:text-7xl font-display font-black leading-tight tracking-tight text-white mb-8">
+                                Great Ideas die <br />
+                                in <span className="text-red-500 italic">uncertainty.</span>
+                            </h2>
                         </motion.div>
-                    ))}
+
+                        <div className="space-y-6">
+                            {painPoints.map((point, index) => (
+                                <motion.div
+                                    key={index}
+                                    initial={{ opacity: 0, x: 30 }}
+                                    whileInView={{ opacity: 1, x: 0 }}
+                                    viewport={{ once: true }}
+                                    transition={{ duration: 0.5, delay: 0.2 + (index * 0.1) }}
+                                    whileHover={{ x: 10 }}
+                                    className="flex items-center gap-4 group"
+                                >
+                                    <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:border-accent/50 group-hover:bg-accent/10 transition-all duration-300">
+                                        <Sparkles size={18} className="text-slate-500 group-hover:text-accent transition-colors" />
+                                    </div>
+                                    <span className="text-xl md:text-2xl text-slate-400 group-hover:text-white transition-colors">
+                                        {point}
+                                    </span>
+                                </motion.div>
+                            ))}
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </section>

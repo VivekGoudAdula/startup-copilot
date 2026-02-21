@@ -137,24 +137,29 @@ export const SolutionSection: React.FC = () => {
     );
 };
 
+import { NeonGradientCard } from '../ui/NeonGradientCard';
+
 const FeatureCard = ({ icon, title, children, glowColor }: { icon: React.ReactNode, title: string, children: React.ReactNode, glowColor: string }) => (
     <motion.div
-        whileHover={{ y: -10, rotateX: 2, rotateY: 2 }}
+        whileHover={{ y: -10 }}
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        className="p-8 rounded-[2.5rem] glass-card border-white/5 relative group transition-all duration-500"
-        style={{ transformStyle: 'preserve-3d' }}
+        className="h-full"
     >
-        <div
-            className="absolute inset-x-10 -bottom-2 h-px transition-opacity opacity-0 group-hover:opacity-100"
-            style={{ background: `linear-gradient(90deg, transparent, ${glowColor}, transparent)` }}
-        />
-        <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center mb-6">
-            {icon}
-        </div>
-        <h3 className="text-2xl font-display font-black text-white italic">{title}</h3>
-        {children}
+        <NeonGradientCard borderRadius="[2.5rem]" className="h-full">
+            <div className="p-8 h-full relative group transition-all duration-500">
+                <div
+                    className="absolute inset-x-10 -bottom-2 h-px transition-opacity opacity-0 group-hover:opacity-100"
+                    style={{ background: `linear-gradient(90deg, transparent, ${glowColor}, transparent)` }}
+                />
+                <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center mb-6">
+                    {icon}
+                </div>
+                <h3 className="text-2xl font-display font-black text-white italic">{title}</h3>
+                {children}
+            </div>
+        </NeonGradientCard>
     </motion.div>
 );
