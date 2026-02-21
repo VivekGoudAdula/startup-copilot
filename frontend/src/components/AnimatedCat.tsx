@@ -62,18 +62,17 @@ export const AnimatedCat: React.FC<AnimatedCatProps> = ({ state = 'idle', classN
         animate={state}
         className="relative z-10"
       >
-        <Cat 
-          size={120} 
-          className={`transition-colors duration-500 ${
-            state === 'success' ? 'text-emerald-400' : 
-            state === 'lowScore' ? 'text-amber-400' : 
-            'text-accent'
-          }`}
+        <Cat
+          size={120}
+          className={`transition-colors duration-500 ${state === 'success' ? 'text-emerald-400' :
+              state === 'lowScore' ? 'text-amber-400' :
+                'text-accent'
+            }`}
         />
-        
+
         {/* Tail animation (CSS based for simplicity in SVG) */}
         <div className="absolute -bottom-2 -right-4">
-           {/* Placeholder for complex SVG tail if needed, using simple motion for now */}
+          {/* Placeholder for complex SVG tail if needed, using simple motion for now */}
         </div>
 
         {/* State specific overlays */}
@@ -100,16 +99,16 @@ export const AnimatedCat: React.FC<AnimatedCatProps> = ({ state = 'idle', classN
                 <motion.div
                   key={i}
                   initial={{ opacity: 0, scale: 0 }}
-                  animate={{ 
-                    opacity: [0, 1, 0], 
+                  animate={{
+                    opacity: [0, 1, 0],
                     scale: [0, 1, 0],
                     x: (Math.random() - 0.5) * 100,
                     y: (Math.random() - 0.5) * 100
                   }}
-                  transition={{ 
-                    duration: 1, 
-                    repeat: Infinity, 
-                    delay: i * 0.2 
+                  transition={{
+                    duration: 1,
+                    repeat: Infinity,
+                    delay: i * 0.2
                   }}
                   className="absolute left-1/2 top-1/2"
                 >
