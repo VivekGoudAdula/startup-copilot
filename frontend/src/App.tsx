@@ -63,6 +63,7 @@ import { ResultsView } from './components/ResultsView';
 import { doc, updateDoc, collection, addDoc, setDoc } from 'firebase/firestore';
 import { WelcomeScreen } from './components/WelcomeScreen';
 import { ContinueDraftScreen } from './components/ContinueDraftScreen';
+import logo from './public/images/logo.png';
 import { ProjectData } from './context/AuthContext';
 import NeonGradient from './components/NeonGradient';
 import { InteractiveGrid } from './components/InteractiveGrid';
@@ -255,11 +256,14 @@ function Dashboard() {
                     <ArrowLeft size={20} />
                   </button>
                   <div className="h-8 w-px bg-slate-100" />
-                  <div>
-                    <h1 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-                      Project Journal <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[10px] rounded-lg border border-indigo-100">{projects.length}</span>
-                    </h1>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Your startup archives</p>
+                  <div className="flex items-center gap-4">
+                    <img src={logo} alt="Startup Copilot" className="h-10 w-auto object-contain" />
+                    <div>
+                      <h1 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+                        Project Journal <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[10px] rounded-lg border border-indigo-100">{projects.length}</span>
+                      </h1>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Your startup archives</p>
+                    </div>
                   </div>
                 </div>
 

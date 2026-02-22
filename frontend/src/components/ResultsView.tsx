@@ -12,6 +12,7 @@ import { IdeaValidation } from './IdeaValidation';
 import { RoadmapGenerator } from './RoadmapGenerator';
 import { CopyGenerator } from './CopyGenerator';
 import { CatMascot } from './CatMascot';
+import logo from '../public/images/logo.png';
 import { Sparkles, ArrowDown, Rocket, Layout, CheckCircle2 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
@@ -99,7 +100,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({ idea, audience, compet
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <img
-                            src="/src/public/images/logo.png"
+                            src={logo}
                             alt="Logo"
                             className="h-16 w-auto object-contain"
                         />
