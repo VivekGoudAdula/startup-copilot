@@ -36,7 +36,8 @@ const ScoreRing: React.FC<{ score: number }> = ({ score }) => {
     requestAnimationFrame(tick);
   }, [score]);
 
-  const offset = circumference - (circumference * score) / 100;
+  const safeScore = isNaN(score) ? 0 : score;
+  const offset = circumference - (circumference * safeScore) / 100;
 
   return (
     <div className="relative w-48 h-48 flex items-center justify-center shrink-0 group">
@@ -286,8 +287,8 @@ const MarketPositionMap: React.FC<{ competitors: ValidationResponse['competitors
             return (
               <g key={idx}>
                 <motion.circle
-                  cx={pos.x * 4}
-                  cy={(100 - pos.y) * 2}
+                  cx={(pos.x || 0) * 4}
+                  cy={(100 - (pos.y || 0)) * 2}
                   r="8"
                   fill="rgba(148,163,184,0.3)"
                   stroke="rgba(148,163,184,0.6)"
@@ -312,8 +313,8 @@ const MarketPositionMap: React.FC<{ competitors: ValidationResponse['competitors
 
           {/* Your idea dot - prominent */}
           <motion.circle
-            cx={yourPos.x * 4}
-            cy={(100 - yourPos.y) * 2}
+            cx={(yourPos.x || 0) * 4}
+            cy={(100 - (yourPos.y || 0)) * 2}
             r="12"
             fill="url(#yourGrad)"
             filter="url(#dotGlow)"

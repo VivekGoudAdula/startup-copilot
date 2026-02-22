@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { doc, getDoc, setDoc, onSnapshot, collection, query, orderBy, limit } from 'firebase/firestore';
+import { doc, setDoc, onSnapshot, collection, query, orderBy } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
 
 export interface ProjectData {
@@ -25,6 +25,7 @@ interface AuthContextType {
   projects: ProjectData[];
   loading: boolean;
   refreshProfile: () => Promise<void>;
+  servicesReady: boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -32,7 +33,8 @@ const AuthContext = createContext<AuthContextType>({
   profile: null,
   projects: [],
   loading: true,
-  refreshProfile: async () => { }
+  refreshProfile: async () => { },
+  servicesReady: false
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -41,20 +43,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [projects, setProjects] = useState<ProjectData[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfileData = async (uid: string) => {
+  const fetchProfileData = (uid: string) => {
     if (!db) return;
 
-    // Subscribe to profile
+    // Use onSnapshot for profile to get cached data immediately
     const profileRef = doc(db, 'users', uid);
-    const profileSnap = await getDoc(profileRef);
-
-    if (!profileSnap.exists()) {
-      const defaultProfile = { onboardingComplete: false };
-      await setDoc(profileRef, defaultProfile);
-      setProfile(defaultProfile);
-    } else {
-      setProfile(profileSnap.data() as UserProfile);
-    }
+    const unsubscribeProfile = onSnapshot(profileRef, (docSnap) => {
+      if (docSnap.exists()) {
+        setProfile(docSnap.data() as UserProfile);
+      } else {
+        const defaultProfile = { onboardingComplete: false };
+        setDoc(profileRef, defaultProfile).catch(err => {
+          console.error("Error creating default profile:", err);
+        });
+        setProfile(defaultProfile);
+      }
+    }, (error) => {
+      console.error("Profile subscription error:", error);
+    });
 
     // Subscribe to projects
     const projectsRef = collection(db, 'users', uid, 'projects');
@@ -66,9 +72,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         ...doc.data()
       })) as ProjectData[];
       setProjects(projectsList);
+    }, (error) => {
+      console.error("Projects subscription error:", error);
     });
 
-    return unsubscribeProjects;
+    return () => {
+      unsubscribeProfile();
+      unsubscribeProjects();
+    };
   };
 
   useEffect(() => {
@@ -77,39 +88,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
 
-    let unsubscribeProjects: (() => void) | undefined;
+    let unsubscribeProfileData: (() => void) | undefined;
 
-    const unsubscribeAuth = onAuthStateChanged(auth, async (currentUser) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
 
       if (currentUser) {
-        unsubscribeProjects = await fetchProfileData(currentUser.uid);
+        unsubscribeProfileData = fetchProfileData(currentUser.uid);
       } else {
         setProfile(null);
         setProjects([]);
+        if (unsubscribeProfileData) {
+          unsubscribeProfileData();
+          unsubscribeProfileData = undefined;
+        }
       }
       setLoading(false);
     });
 
     return () => {
       unsubscribeAuth();
-      if (unsubscribeProjects) unsubscribeProjects();
+      if (unsubscribeProfileData) unsubscribeProfileData();
     };
   }, []);
 
   const refreshProfile = async () => {
-    if (user && db) {
-      const profileRef = doc(db, 'users', user.uid);
-      const profileSnap = await getDoc(profileRef);
-      if (profileSnap.exists()) {
-        setProfile(profileSnap.data() as UserProfile);
-      }
-    }
+    // With onSnapshot, refreshProfile is mostly redundant for data updates
+    // but we can keep a placeholder or re-trigger if needed
   };
 
+  const servicesReady = !!(auth && db);
+
   return (
-    <AuthContext.Provider value={{ user, profile, projects, loading, refreshProfile }}>
-      {!loading && children}
+    <AuthContext.Provider value={{ user, profile, projects, loading, refreshProfile, servicesReady }}>
+      {children}
     </AuthContext.Provider>
   );
 };

@@ -20,8 +20,10 @@ function getPupilOffset(
     const dy = cursorY - eyeScreenY;
     const dist = Math.sqrt(dx * dx + dy * dy);
     if (dist === 0) return { x: 0, y: 0 };
-    const scale = Math.min(dist, 80) / 80;
-    return { x: (dx / dist) * maxOffset * scale, y: (dy / dist) * maxOffset * scale };
+    const scale = isNaN(dist) || dist === 0 ? 0 : Math.min(dist, 80) / 80;
+    const x = isNaN(dist) || dist === 0 ? 0 : (dx / dist) * maxOffset * scale;
+    const y = isNaN(dist) || dist === 0 ? 0 : (dy / dist) * maxOffset * scale;
+    return { x: isNaN(x) ? 0 : x, y: isNaN(y) ? 0 : y };
 }
 
 export const CopilotCat: React.FC<CopilotCatProps> = ({ mode }) => {
@@ -162,7 +164,7 @@ export const CopilotCat: React.FC<CopilotCatProps> = ({ mode }) => {
                             {/* Pupil tracks cursor */}
                             <motion.circle
                                 r="19" fill="url(#pupilGrad)"
-                                animate={{ cx: 90 + pupilLeft.x, cy: 118 + pupilLeft.y }}
+                                animate={{ cx: 90 + (pupilLeft.x || 0), cy: 118 + (pupilLeft.y || 0) }}
                                 transition={{ type: 'spring', stiffness: 800, damping: 18 }}
                             />
                             {/* Crescent glint */}
@@ -174,7 +176,7 @@ export const CopilotCat: React.FC<CopilotCatProps> = ({ mode }) => {
                             <circle cx="155" cy="118" r="36" fill="url(#irisGrad)" filter="url(#eyeGlow)" />
                             <motion.circle
                                 r="19" fill="url(#pupilGrad)"
-                                animate={{ cx: 155 + pupilRight.x, cy: 118 + pupilRight.y }}
+                                animate={{ cx: 155 + (pupilRight.x || 0), cy: 118 + (pupilRight.y || 0) }}
                                 transition={{ type: 'spring', stiffness: 800, damping: 18 }}
                             />
                             <ellipse cx="165" cy="106" rx="9" ry="6" fill="white" opacity="0.92" transform="rotate(-25 165 106)" />
@@ -224,7 +226,7 @@ export const CopilotCat: React.FC<CopilotCatProps> = ({ mode }) => {
                             <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                                 {[0, 1, 2].map(i => (
                                     <motion.circle key={i} cx={172 + i * 11} cy={55} r={3.5 - i * 0.5} fill="#A78BFA"
-                                        animate={{ y: [0, -16, 0], opacity: [0, 1, 0] }}
+                                        animate={{ cy: [55, 39, 55], opacity: [0, 1, 0] }}
                                         transition={{ repeat: Infinity, duration: 1.8, delay: i * 0.4 }} />
                                 ))}
                             </motion.g>
@@ -260,7 +262,7 @@ export const CopilotCat: React.FC<CopilotCatProps> = ({ mode }) => {
                     { cx: 238, cy: 130, r: 2, delay: 1.5 },
                 ].map((p, i) => (
                     <motion.circle key={i} cx={p.cx} cy={p.cy} r={p.r} fill="#C4B5FD"
-                        animate={{ opacity: [0, 0.8, 0], y: [0, -10, 0] }}
+                        animate={{ opacity: [0, 0.8, 0], cy: [p.cy, p.cy - 10, p.cy] }}
                         transition={{ repeat: Infinity, duration: 3.5, delay: p.delay, ease: 'easeInOut' }} />
                 ))}
             </svg>

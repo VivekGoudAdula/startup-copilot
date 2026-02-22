@@ -1,9 +1,10 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { Rocket, Plus, ChevronRight, Layout, TrendingUp, Shield } from 'lucide-react';
-import { CopilotCat } from './auth/CopilotCat';
+import { SmartCat } from './SmartCat';
 import logo from '../public/images/logo.png';
 import { ProjectData } from '../context/AuthContext';
+import { InteractiveGrid } from './InteractiveGrid';
 
 interface WelcomeScreenProps {
     userName: string;
@@ -23,11 +24,37 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
     isBestProject
 }) => {
     return (
-        <div className="min-h-screen bg-[#FDFDFF] flex items-center justify-center relative overflow-hidden">
-            {/* Ambient background glows */}
+        <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center relative overflow-hidden">
+            {/* ── Enhanced Ambient Background ── */}
             <div className="absolute inset-0 pointer-events-none">
-                <div className="absolute top-[-20%] left-[-10%] w-[55%] h-[55%] bg-indigo-200/20 blur-[160px] rounded-full animate-pulse" />
-                <div className="absolute bottom-[-20%] right-[-10%] w-[55%] h-[55%] bg-violet-200/20 blur-[160px] rounded-full animate-pulse" style={{ animationDelay: '2s' }} />
+                <InteractiveGrid />
+
+                {/* Dynamic Glows */}
+                <motion.div
+                    animate={{
+                        scale: [1, 1.1, 1],
+                        x: [0, 20, 0],
+                        y: [0, -20, 0]
+                    }}
+                    transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+                    className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-indigo-200/30 blur-[140px] rounded-full"
+                />
+                <motion.div
+                    animate={{
+                        scale: [1, 1.2, 1],
+                        x: [0, -30, 0],
+                        y: [0, 20, 0]
+                    }}
+                    transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+                    className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-violet-200/30 blur-[140px] rounded-full"
+                />
+                <motion.div
+                    animate={{
+                        opacity: [0.1, 0.2, 0.1],
+                    }}
+                    transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-emerald-50/20 blur-[120px] rounded-full"
+                />
             </div>
 
             {/* ── Main content — no card, directly on screen ── */}
@@ -43,7 +70,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                     <h1 className="text-5xl font-black text-slate-900 tracking-tight leading-tight">
                         Welcome back,{' '}
                         <span className="bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">
-                            {userName} 👋
+                            {userName}
                         </span>
                     </h1>
                 </div>
@@ -181,17 +208,11 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             </motion.div>
 
             {/* ── Fixed Cat Companion ── */}
-            <motion.div
-                className="fixed bottom-42 right-52 z-50 flex flex-col items-end gap-1"
-                initial={{ x: 100, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ type: 'spring', stiffness: 80, damping: 18, delay: 0.7 }}
-            >
-
-                <div className="w-4 h-4">
-                    <CopilotCat mode={isBestProject ? 'happy' : 'login'} />
-                </div>
-            </motion.div>
+            <SmartCat
+                mode={isBestProject ? 'happy' : 'login'}
+                className="fixed bottom-12 right-12 z-50 flex flex-col items-end gap-1"
+                size={192} // Equivalent to w-48 h-48
+            />
         </div>
     );
 };
