@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, Variants } from 'motion/react';
 import { Cat, Sparkles, Laptop } from 'lucide-react';
 
 export type CatState = 'idle' | 'thinking' | 'generating' | 'success' | 'lowScore';
@@ -10,7 +10,7 @@ interface AnimatedCatProps {
 }
 
 export const AnimatedCat: React.FC<AnimatedCatProps> = ({ state = 'idle', className = '' }) => {
-  const variants = {
+  const variants: Variants = {
     idle: {
       y: [0, -10, 0],
       rotate: [0, 2, -2, 0],
@@ -65,8 +65,8 @@ export const AnimatedCat: React.FC<AnimatedCatProps> = ({ state = 'idle', classN
         <Cat
           size={120}
           className={`transition-colors duration-500 ${state === 'success' ? 'text-emerald-400' :
-              state === 'lowScore' ? 'text-amber-400' :
-                'text-accent'
+            state === 'lowScore' ? 'text-amber-400' :
+              'text-accent'
             }`}
         />
 

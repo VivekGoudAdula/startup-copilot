@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import {
     Mail,
     Lock,
+    Eye,
+    EyeOff,
     User,
     ChevronRight,
     AlertCircle,
@@ -19,7 +21,15 @@ import {
     createUserWithEmailAndPassword,
     updateProfile
 } from 'firebase/auth';
-import { auth } from '../../lib/firebase';
+import {
+    collection,
+    query,
+    where,
+    getDocs,
+    setDoc,
+    doc
+} from 'firebase/firestore';
+import { auth, db } from '../../lib/firebase';
 import { CopilotCat } from './CopilotCat';
 
 interface AuthLayoutProps {
@@ -62,24 +72,57 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ initialMode = 'login' })
     // Form Submission
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!auth) {
-            setError('Authentication is not configured.');
+        if (!auth || !db) {
+            setError('Authentication service is not fully initialized.');
             return;
         }
         setLoading(true);
         setError(null);
         try {
+            let loginEmail = email;
+
             if (isLogin) {
-                await signInWithEmailAndPassword(auth, email, password);
-            } else {
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                if (fullName) {
-                    await updateProfile(userCredential.user, { displayName: fullName });
+                // If it doesn't look like an email, try resolving it as a username
+                if (!email.includes('@')) {
+                    const usersRef = collection(db, 'users');
+                    const q = query(usersRef, where('username', '==', email.toLowerCase()));
+                    const querySnapshot = await getDocs(q);
+
+                    if (!querySnapshot.empty) {
+                        const userData = querySnapshot.docs[0].data();
+                        loginEmail = userData.email;
+                    } else {
+                        throw new Error('Username not found. Please use your email or check the spelling.');
+                    }
                 }
+                await signInWithEmailAndPassword(auth, loginEmail, password);
+            } else {
+                // Check if username is already taken if we were being strict, 
+                // but for now let's just create the user.
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                if (fullName) {
+                    await updateProfile(user, { displayName: fullName });
+                }
+
+                // Create/Update user profile in Firestore
+                await setDoc(doc(db, 'users', user.uid), {
+                    fullName: fullName,
+                    username: fullName.toLowerCase(), // Store raw lowercased name for easy lookup
+                    email: email.toLowerCase(),
+                    onboardingComplete: false,
+                    createdAt: Date.now()
+                }, { merge: true });
             }
             navigate('/dashboard');
         } catch (err: any) {
-            setError(err.message || 'Authentication failed');
+            console.error('Auth error:', err);
+            let message = err.message || 'Authentication failed';
+            if (err.code === 'auth/user-not-found') message = 'No account found with this email.';
+            if (err.code === 'auth/wrong-password') message = 'Incorrect password.';
+            if (err.code === 'auth/email-already-in-use') message = 'Email is already registered.';
+            setError(message);
         } finally {
             setLoading(false);
         }
@@ -194,7 +237,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ initialMode = 'login' })
                                         <Mail size={18} />
                                     </div>
                                     <input
-                                        type="email"
+                                        type={isLogin ? "text" : "email"}
                                         required
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
@@ -228,10 +271,9 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ initialMode = 'login' })
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600"
+                                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none"
                                     >
-                                        {showPassword ? <Lock size={16} /> : <Lock size={16} />}
-                                        {/* Just using Lock for now, can change to Eye if preferred */}
+                                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                     </button>
                                 </div>
                             </div>
