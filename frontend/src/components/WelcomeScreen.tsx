@@ -66,7 +66,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             >
                 {/* Logo + Greeting */}
                 <div className="space-y-3">
-                    <img src={logo} alt="Startup Copilot" className="h-10 w-auto object-contain" />
+                    <img src={logo} alt="Startup Copilot" className="h-16 w-auto object-contain" />
                     <h1 className="text-5xl font-black text-slate-900 tracking-tight leading-tight">
                         Welcome back,{' '}
                         <span className="bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">

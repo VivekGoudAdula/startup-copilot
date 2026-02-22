@@ -257,7 +257,7 @@ function Dashboard() {
                   </button>
                   <div className="h-8 w-px bg-slate-100" />
                   <div className="flex items-center gap-4">
-                    <img src={logo} alt="Startup Copilot" className="h-10 w-auto object-contain" />
+                    <img src={logo} alt="Startup Copilot" className="h-16 w-auto object-contain" />
                     <div>
                       <h1 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-3">
                         Project Journal <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[10px] rounded-lg border border-indigo-100">{projects.length}</span>

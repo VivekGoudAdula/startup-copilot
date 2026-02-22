@@ -102,7 +102,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({ idea, audience, compet
                         <img
                             src={logo}
                             alt="Logo"
-                            className="h-16 w-auto object-contain"
+                            className="h-20 w-auto object-contain"
                         />
                         <div>
                             <h1 className="text-sm font-black text-indigo-600 uppercase tracking-[0.2em] leading-none">STARTUP COPILOT</h1>

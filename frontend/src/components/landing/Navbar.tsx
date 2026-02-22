@@ -43,7 +43,7 @@ export const Navbar: React.FC = () => {
                         <img
                             src="/logo.png"
                             alt="Startup Copilot Logo"
-                            className="h-12 w-auto object-contain brightness-110 group-hover:drop-shadow-[0_0_8px_rgba(79,156,249,0.5)] transition-all"
+                            className="h-16 w-auto object-contain brightness-110 group-hover:drop-shadow-[0_0_8px_rgba(79,156,249,0.5)] transition-all"
                         />
                     </div>
                 </Link>
